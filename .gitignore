@@ -1,0 +1,12 @@
+# Ignore user personal archives and output OPML files
+*.har
+*.opml
+*.xml
+titles*.txt
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
