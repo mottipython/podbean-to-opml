@@ -18,14 +18,22 @@ import socket
 import argparse
 import urllib.request
 import urllib.parse
+import urllib.error
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from datetime import datetime, timezone
 
-# Ensure IPv4 resolution to prevent Akamai/Apple CDN IPv6 rate-limit/403 blocks
+# Ensure IPv4 resolution to prevent Akamai/Apple CDN IPv6 rate-limit/403 blocks,
+# with graceful fallback if IPv4 resolution fails.
 _orig_getaddrinfo = socket.getaddrinfo
 def _getaddrinfo_v4(host, port, family=0, type=0, proto=0, flags=0):
-    return [r for r in _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)]
+    try:
+        res = [r for r in _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)]
+        if res:
+            return res
+    except socket.gaierror:
+        pass
+    return _orig_getaddrinfo(host, port, family, type, proto, flags)
 socket.getaddrinfo = _getaddrinfo_v4
 
 
