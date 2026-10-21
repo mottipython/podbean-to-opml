@@ -20,7 +20,6 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import xml.etree.ElementTree as ET
-from xml.dom import minidom
 from datetime import datetime, timezone
 
 # Ensure IPv4 resolution to prevent Akamai/Apple CDN IPv6 rate-limit/403 blocks,
@@ -42,11 +41,12 @@ def extract_podcast_titles(har_path):
     Parses a HAR file and extracts podcast titles from JSON responses
     and HTML card components. Deduplicates titles using a Python set.
     """
-    if not os.path.isfile(har_path):
-        raise FileNotFoundError(f"HAR file not found: {har_path}")
+    resolved_path = os.path.abspath(har_path)
+    if not os.path.isfile(resolved_path):
+        raise FileNotFoundError(f"HAR file not found: {resolved_path}")
 
-    print(f"[*] Reading HTTP Archive: {har_path}...")
-    with open(har_path, "r", encoding="utf-8", errors="ignore") as f:
+    print(f"[*] Reading HTTP Archive: {resolved_path}...")
+    with open(resolved_path, "r", encoding="utf-8", errors="ignore") as f:
         har_data = json.load(f)
 
     entries = har_data.get("log", {}).get("entries", [])
@@ -187,11 +187,14 @@ def generate_opml(podcast_feeds, output_path="podbean_rescue.opml"):
             htmlUrl=item.get("htmlUrl", "")
         )
 
-    raw_xml = ET.tostring(opml, encoding="utf-8")
-    parsed_dom = minidom.parseString(raw_xml)
-    pretty_xml = parsed_dom.toprettyxml(indent="  ", encoding="utf-8")
+    if hasattr(ET, "indent"):
+        ET.indent(opml, space="  ")
+        pretty_xml = ET.tostring(opml, encoding="utf-8", xml_declaration=True)
+    else:
+        pretty_xml = ET.tostring(opml, encoding="utf-8")
 
-    with open(output_path, "wb") as f:
+    resolved_output = os.path.abspath(output_path)
+    with open(resolved_output, "wb") as f:
         f.write(pretty_xml)
 
     print(f"\n[+] OPML file successfully saved to: {output_path}")
