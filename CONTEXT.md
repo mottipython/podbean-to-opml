@@ -10,7 +10,7 @@ Rust crate `podcast-rescue`: exports podcast subscriptions to OPML via a local b
 
 ## Not done
 - Safari has no extension (bookmarklet only).
-- v0.4.0 released (extension, sync fixes, local server hardening). Windows/mac builds are untested on real machines this round.
+- v0.4.1 released (extension, sync fixes, local server hardening, Quit button). Windows/mac builds are untested on real machines this round.
 
 ## End-to-end check (2026-11-01)
 Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked by publisher) -> OPML 70 unique feeds. Works in Chrome and Firefox 158.
