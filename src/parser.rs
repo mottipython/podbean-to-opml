@@ -5,9 +5,11 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 
 static RE_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]+>").unwrap());
-static RE_CARD: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<a\b[^>]*class="[^"]*\bcard-title\b[^"]*"[^>]*>(.*?)</a>"#).unwrap());
-static RE_DATA: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)data-(?:dir-)?podcast-title="([^"]+)"(?:[^>]*data-(?:dir-)?author="([^"]+)")?"#).unwrap());
-static RE_DETAIL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<a\b[^>]*href="[^"]*/podcast-detail/[^"]*"[^>]*>(.*?)</a>"#).unwrap());
+static RE_CARD: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<a\b[^>]*class=["'][^"']*\b(?:card-title|title|pod-name|item-title)\b[^"']*["'][^>]*>(.*?)</a>"#).unwrap());
+static RE_DATA: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)data-(?:dir-)?(?:podcast-)?title=["']([^"']+)["'](?:[^>]*data-(?:dir-)?author=["']([^"']+)["'])?"#).unwrap());
+static RE_DETAIL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<a\b([^>]*)href=["'][^"']*/podcast-detail/[^"']*["']([^>]*)>(.*?)</a>"#).unwrap());
+static RE_ATTR_TITLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)\btitle=["']([^"']+)["']"#).unwrap());
+static RE_ATTR_ALT: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)\balt=["']([^"']+)["']"#).unwrap());
 static RE_CHANNEL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<channel\b[^>]*>(.*?)</channel>"#).unwrap());
 static RE_CHANNEL_TITLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<title\b[^>]*>(.*?)</title>"#).unwrap());
 static RE_CHANNEL_AUTHOR: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<itunes:author\b[^>]*>(.*?)</itunes:author>"#).unwrap());
@@ -209,7 +211,16 @@ pub fn scan_html(text: &str, platform: &str, map: &mut HashMap<String, PodcastSh
 
     // Podbean show detail links: <a href=".../podcast-detail/...">Title</a>
     for cap in RE_DETAIL.captures_iter(text) {
-        let t = strip_html_tags(&cap[1]);
+        let mut t = strip_html_tags(&cap[3]);
+        // If inner text was empty (e.g. only <img>), check title or alt attribute
+        if t.is_empty() {
+            let attrs = format!("{} {}", &cap[1], &cap[2]);
+            if let Some(m) = RE_ATTR_TITLE.captures(&attrs).or_else(|| RE_ATTR_TITLE.captures(&cap[3])) {
+                t = strip_html_tags(&m[1]);
+            } else if let Some(m) = RE_ATTR_ALT.captures(&cap[3]) {
+                t = strip_html_tags(&m[1]);
+            }
+        }
         if !t.is_empty() && !is_ui_noise(&t) {
             let key = norm_key(&t);
             map.entry(key).or_insert_with(|| PodcastShow {

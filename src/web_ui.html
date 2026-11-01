@@ -648,6 +648,10 @@
           <input type="text" class="text-input" id="url-input" placeholder="Paste public podcast link, RSS feed XML, or profile URL">
         </div>
         <button class="btn btn-primary" id="btn-scrape-url" onclick="handleScrapeUrl()">Fetch & Ingest</button>
+        <button class="btn btn-secondary" id="btn-paste-clipboard" onclick="pastePageClipboard()" title="Paste copied Podbean page (Ctrl+V)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          Paste from Clipboard
+        </button>
       </div>
       <div id="url-status-msg" class="status-banner"></div>
 
@@ -656,23 +660,23 @@
         <!-- 1-Click Browser Sync Bridge -->
         <div class="bridge-box">
           <div>
-            <div style="font-weight: 600; color: #fff; margin-bottom: 4px; font-size: 13px;">1-Click Browser Sync</div>
+            <div style="font-weight: 600; color: #fff; margin-bottom: 4px; font-size: 13px;">1-Click Browser Sync Bridge</div>
             <div class="bridge-desc" id="bridge-instructions">
-              Since subscriptions are private to your account, run the 1-click sync inside your logged-in browser tab:
+              Subscriptions are private to your logged-in browser session. Run the 1-click sync inside your active tab:
             </div>
           </div>
           <div class="bridge-footer" style="flex-wrap: wrap; gap: 8px;">
-            <a class="btn btn-bookmarklet" id="bookmarklet-btn" href="#">
+            <a class="btn btn-bookmarklet" id="bookmarklet-btn" href="#" onclick="handleBookmarkletClick(event)" title="Drag to bookmarks bar, or click to launch sync">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
               Rescue Library (Bookmark)
             </a>
-            <button class="btn btn-primary" onclick="copyConsoleScript(true)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              Copy Code & Open Platform
+            <button class="btn btn-primary" onclick="launchAutomatedSync(currentPlatform)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Launch Profile & Auto-Sync
             </button>
-            <button class="btn btn-secondary" id="btn-launch-platform" onclick="openServicePlatform()">
-              Open Following Page
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            <button class="btn btn-secondary" onclick="pastePageClipboard()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              Paste from Clipboard
             </button>
           </div>
         </div>
@@ -846,8 +850,50 @@
     }
 
     function openServicePlatform() {
-      const url = platforms[currentPlatform].url;
-      if (url) window.open(url, '_blank');
+      openPlatformDirect(currentPlatform);
+    }
+
+    function openPlatformDirect(p) {
+      const conf = platforms[p] || platforms.podbean;
+      const targetUrl = conf.url || 'https://www.podbean.com/site/userCenter/profile';
+      if (!targetUrl) return;
+
+      // 1. Synchronously open window in click callstack
+      try {
+        window.open(targetUrl, '_blank');
+      } catch (e) {}
+
+      // 2. Also call backend /api/open-browser as foolproof system fallback
+      fetch('/api/open-browser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl })
+      }).catch(() => {});
+    }
+
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {
+          fallbackCopyText(text);
+        });
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.top = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {}
+      ta.remove();
     }
 
     function showToast(msg) {
@@ -892,9 +938,9 @@
 
     function parseDoc(doc) {
       var hits = 0;
-      var els = doc.querySelectorAll('.card-title, a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .following-list a, .pod-item a, .sub-item a, .pod-name a, .v-center a');
+      var els = doc.querySelectorAll('.card-title, a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .following-list a, .pod-item a, .sub-item a, .pod-name a, .v-center a, .title a, a[title]');
       els.forEach(function(el){
-        var title = el.getAttribute('data-dir-podcast-title') || el.textContent || '';
+        var title = el.getAttribute('data-dir-podcast-title') || el.getAttribute('title') || el.textContent || '';
         title = title.replace(/\\s+/g, ' ').trim();
         var author = el.getAttribute('data-dir-author') || null;
         if (author) author = author.replace(/\\s+/g, ' ').trim();
@@ -916,7 +962,7 @@
 
     if (window.location.hostname.indexOf('podbean.com') !== -1) {
       var page = 2;
-      while (page <= 12) {
+      while (page <= 15) {
         statEl.textContent = 'Crawling Page ' + page + ' (' + list.length + ' shows)...';
         var baseHref = window.location.href.replace(/([?&])page2?=\\d+/g, '').replace(/([?&])pageSize=\\d+/g, '');
         var sep = baseHref.indexOf('?') !== -1 ? '&' : '?';
@@ -927,6 +973,14 @@
           var html = await r.text();
           var pDoc = new DOMParser().parseFromString(html, 'text/html');
           var count = parseDoc(pDoc);
+          if (count === 0) {
+            var r2 = await fetch(pUrl + '&pageSize=9', { credentials: 'include' });
+            if (r2.ok) {
+              var html2 = await r2.text();
+              var pDoc2 = new DOMParser().parseFromString(html2, 'text/html');
+              count = parseDoc(pDoc2);
+            }
+          }
           if (count === 0) break;
           page++;
         } catch(e) { break; }
@@ -959,17 +1013,97 @@
 
     function copyConsoleScript(andOpen) {
       const code = getRawScriptText(currentPlatform);
-      navigator.clipboard.writeText(code).then(() => {
-        showToast("📋 Code copied! In your Podbean tab, press F12 (Console), paste (Ctrl+V) and hit Enter.");
-        if (andOpen) {
-          openServicePlatform();
+      copyToClipboard(code);
+      if (andOpen) {
+        openPlatformDirect(currentPlatform);
+      }
+      showToast("📋 Code copied! In your Podbean tab, press F12 (Console), paste (Ctrl+V) and hit Enter.");
+    }
+
+    function launchAutomatedSync(platform) {
+      const p = platform || currentPlatform;
+      const code = getRawScriptText(p);
+      copyToClipboard(code);
+      openPlatformDirect(p);
+
+      showToast("🚀 Opened " + (platforms[p]?.title || "platform") + "! Auto-crawler snippet copied to clipboard.");
+
+      const statusEl = document.getElementById('url-status-msg');
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.className = 'status-banner status-warning';
+        statusEl.innerHTML = `
+          <div style="font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
+            Connected to Browser Session — Listening on 127.0.0.1:3000
+          </div>
+          <div style="margin-bottom: 8px; color: var(--text-secondary); font-size: 12.5px;">
+            In the opened tab, press <strong>F12</strong> (Console), paste (<strong>Ctrl+V</strong>), and hit <strong>Enter</strong> — or click your saved bookmarklet. All shows across all pages will sync automatically!
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="pastePageClipboard()">
+              📋 Or Paste Copied Page Text/HTML (Ctrl+V)
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    async function pastePageClipboard() {
+      try {
+        let content = '';
+        if (navigator.clipboard && navigator.clipboard.read) {
+          try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+              if (item.types.includes('text/html')) {
+                const blob = await item.getType('text/html');
+                content = await blob.text();
+                break;
+              }
+            }
+          } catch(e) {}
         }
-      }).catch(() => {
-        prompt("Copy this code, open your Podbean tab, open Console (F12), paste and hit Enter:", code);
-        if (andOpen) {
-          openServicePlatform();
+
+        if (!content && navigator.clipboard && navigator.clipboard.readText) {
+          try {
+            content = await navigator.clipboard.readText();
+          } catch(e) {}
         }
-      });
+
+        if (!content) {
+          content = prompt("Paste your copied Podbean page text or HTML here (Ctrl+V):");
+        }
+
+        if (content && content.trim().length > 5) {
+          const resp = await fetch('/api/parse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: content, platform: currentPlatform })
+          });
+          const data = await resp.json();
+          if (data.shows && data.shows.length > 0) {
+            showToast(`🎉 Imported ${data.shows.length} shows from clipboard!`);
+            mergeIncomingShows(data.shows);
+            const statusEl = document.getElementById('url-status-msg');
+            if (statusEl) {
+              statusEl.style.display = 'block';
+              statusEl.className = 'status-banner status-success';
+              statusEl.textContent = `Extracted and merged ${data.shows.length} shows from clipboard. Total library: ${libraryShows.length} shows.`;
+            }
+          } else {
+            showToast("No podcast shows detected in clipboard content. Make sure to select and copy the podcast cards on your profile.");
+          }
+        }
+      } catch(err) {
+        showToast("Clipboard access: " + err.message);
+      }
+    }
+
+    function handleBookmarkletClick(e) {
+      e.preventDefault();
+      launchAutomatedSync(currentPlatform);
+      showToast("👉 Drag this button up to your Bookmarks Bar! Or click 'Launch Profile & Auto-Sync' right now.");
     }
 
     function setupBookmarklet(platform) {
@@ -990,6 +1124,37 @@
       const origText = btn.textContent;
       btn.textContent = 'Fetching...';
 
+      // Check if user entered a private profile URL
+      const isPrivateProfile = url.includes('podbean.com') && (url.includes('user-') || url.includes('/userCenter') || url.includes('/following') || url.includes('/user/'));
+
+      if (isPrivateProfile) {
+        statusEl.style.display = 'block';
+        statusEl.className = 'status-banner status-warning';
+        statusEl.innerHTML = `
+          <div style="font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 14px;">🔒 Private Account Profile Detected</div>
+          <div style="margin-bottom: 10px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+            Podbean keeps your subscriptions private to your logged-in browser session. Because you are logged into Edge on this machine, choose your preferred 1-click rescue method:
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+            <button class="btn btn-primary" onclick="launchAutomatedSync('podbean')">
+              🚀 Launch Profile & Auto-Sync
+            </button>
+            <button class="btn btn-secondary" onclick="pastePageClipboard()">
+              📋 Paste Copied Page (Ctrl+V)
+            </button>
+            <button class="btn btn-secondary" onclick="openModal('guide-modal')">
+              📖 View Sync Guide
+            </button>
+          </div>
+          <div id="sync-telemetry-status" style="font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+            💡 <strong>Quickest zero-effort way:</strong> In your Podbean tab, press <code>Ctrl+A</code> then <code>Ctrl+C</code> (Select All & Copy), then click <strong>"Paste Copied Page"</strong> above! All shows will import instantly.
+          </div>
+        `;
+        btn.disabled = false;
+        btn.textContent = origText;
+        return;
+      }
+
       try {
         const resp = await fetch('/api/scrape-url', {
           method: 'POST',
@@ -1006,22 +1171,7 @@
         } else {
           statusEl.style.display = 'block';
           statusEl.className = 'status-banner status-warning';
-          const isAuth = (data.error && data.error.includes('logged into your account')) || url.includes('/following') || url.includes('/user') || url.includes('user-') || url.includes('userCenter');
-          if (isAuth) {
-            statusEl.innerHTML = `
-              <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">🔒 Private Account Profile Detected</div>
-              <div style="margin-bottom: 8px;">Your followed podcasts are private to your logged-in browser session. To rescue your complete library:</div>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-                <button class="btn btn-primary" onclick="copyConsoleScript(true)">📋 Copy Code & Open Profile</button>
-                <button class="btn btn-secondary" onclick="copyConsoleScript(false)">📋 Copy Code Only</button>
-              </div>
-              <div style="font-size: 11.5px; color: var(--text-muted);">
-                <strong>How to run:</strong> In the opened profile tab, press <code>F12</code> (Console), paste (<code>Ctrl+V</code>), and hit <code>Enter</code>. All 76 shows will sync in seconds!
-              </div>
-            `;
-          } else {
-            statusEl.textContent = data.error || 'No podcast subscriptions found at this URL.';
-          }
+          statusEl.textContent = data.error || 'No podcast subscriptions found at this URL.';
         }
       } catch (err) {
         statusEl.style.display = 'block';
@@ -1073,17 +1223,20 @@
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
         return; // allow normal input handling
       }
+      const html = (e.clipboardData || window.clipboardData).getData('text/html');
       const text = (e.clipboardData || window.clipboardData).getData('text');
-      if (text && text.trim().length > 5) {
+      const content = (html && html.trim().length > 10) ? html : text;
+
+      if (content && content.trim().length > 5) {
         try {
           const resp = await fetch('/api/parse', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: text, platform: currentPlatform })
+            body: JSON.stringify({ content: content, platform: currentPlatform })
           });
           const data = await resp.json();
           if (data.shows && data.shows.length > 0) {
-            showToast(`Pasted clipboard content recognized! Imported ${data.shows.length} shows.`);
+            showToast(`🎉 Pasted content recognized! Imported ${data.shows.length} shows.`);
             mergeIncomingShows(data.shows);
           }
         } catch(err) {}

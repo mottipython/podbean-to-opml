@@ -273,6 +273,32 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
             continue;
         }
 
+        if method == "POST" && url == "/api/open-browser" {
+            let mut body = String::new();
+            if request.as_reader().read_to_string(&mut body).is_ok() {
+                if let Ok(json) = serde_json::from_str::<serde_json::Value>(&body) {
+                    if let Some(target_url) = json.get("url").and_then(|u| u.as_str()) {
+                        if target_url.starts_with("http://") || target_url.starts_with("https://") {
+                            #[cfg(target_os = "windows")]
+                            let _ = std::process::Command::new("cmd").args(["/C", "start", "", target_url]).spawn();
+                            #[cfg(target_os = "macos")]
+                            let _ = std::process::Command::new("open").arg(target_url).spawn();
+                            #[cfg(target_os = "linux")]
+                            let _ = std::process::Command::new("xdg-open").arg(target_url).spawn();
+
+                            let resp = Response::from_string("{\"status\":\"ok\"}")
+                                .with_header(header_json)
+                                .with_header(header_cors);
+                            let _ = request.respond(resp);
+                            continue;
+                        }
+                    }
+                }
+            }
+            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            continue;
+        }
+
         let _ = request.respond(Response::from_string("404 Not Found").with_status_code(404));
     }
 
