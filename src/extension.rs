@@ -10,6 +10,12 @@ const SCRIPTS: [(&str, &str); 2] = [
     ("podbean.js", include_str!("../extension/podbean.js")),
 ];
 
+const ICONS: [(&str, &[u8]); 3] = [
+    ("icon16.png", include_bytes!("../extension/icon16.png")),
+    ("icon48.png", include_bytes!("../extension/icon48.png")),
+    ("icon128.png", include_bytes!("../extension/icon128.png")),
+];
+
 fn crc32(data: &[u8]) -> u32 {
     let mut crc = !0u32;
     for &b in data {
@@ -24,12 +30,15 @@ fn crc32(data: &[u8]) -> u32 {
 /// Chromium browsers (Chrome, Edge, Brave, Opera, Vivaldi) take the MV3 manifest; Firefox needs MV2 so site access is granted at install.
 pub fn extension_zip(firefox: bool) -> Vec<u8> {
     let manifest = if firefox { FIREFOX_MANIFEST } else { CHROMIUM_MANIFEST };
-    let files: Vec<(&str, &str)> = std::iter::once(("manifest.json", manifest)).chain(SCRIPTS).collect();
+    let text = std::iter::once(("manifest.json", manifest)).chain(SCRIPTS);
+    let files: Vec<(&str, Vec<u8>)> = text
+        .map(|(name, body)| (name, body.replace("__VERSION__", VERSION).into_bytes()))
+        .chain(ICONS.map(|(name, bytes)| (name, bytes.to_vec())))
+        .collect();
     let mut out = Vec::new();
     let mut central = Vec::new();
-    for (name, body) in &files {
-        let data = body.replace("__VERSION__", VERSION).into_bytes();
-        let (crc, len, offset) = (crc32(&data), data.len() as u32, out.len() as u32);
+    for (name, data) in &files {
+        let (crc, len, offset) = (crc32(data), data.len() as u32, out.len() as u32);
         let path = format!("podcast-rescue-extension/{name}");
         let head = |sig: &[u8; 4], ver: &[u8]| -> Vec<u8> {
             let mut h = sig.to_vec();
@@ -44,7 +53,7 @@ pub fn extension_zip(firefox: bool) -> Vec<u8> {
         out.extend(head(b"PK\x03\x04", &[20, 0]));
         out.extend_from_slice(&[0, 0]);
         out.extend_from_slice(path.as_bytes());
-        out.extend_from_slice(&data);
+        out.extend_from_slice(data);
 
         central.extend(head(b"PK\x01\x02", &[20, 0, 20, 0]));
         central.extend_from_slice(&[0; 12]); // extra, comment, disk, attrs

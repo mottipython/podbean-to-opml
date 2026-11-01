@@ -3,18 +3,40 @@
   "name": "Podcast Rescue Bridge",
   "version": "__VERSION__",
   "description": "Lets the Podcast Rescue app read your followed podcasts from your logged-in Podbean session.",
-  "browser_specific_settings": { "gecko": { "id": "podcast-rescue@mottipython.github.io" } },
-  "permissions": ["http://127.0.0.1/*", "http://localhost/*", "https://*.podbean.com/*"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "podcast-rescue@mottipython.github.io"
+    }
+  },
+  "permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://*.podbean.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://*.podbean.com/*"],
-      "js": ["podbean.js"],
+      "matches": [
+        "https://*.podbean.com/*"
+      ],
+      "js": [
+        "podbean.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["http://127.0.0.1/*", "http://localhost/*"],
-      "js": ["cockpit.js"],
+      "matches": [
+        "http://127.0.0.1/*",
+        "http://localhost/*"
+      ],
+      "js": [
+        "cockpit.js"
+      ],
       "run_at": "document_start"
     }
-  ]
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
 }
