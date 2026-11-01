@@ -3,1022 +3,948 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Podcast Rescue • Autonomous Subscriptions Exporter</title>
+  <title>Podcast Rescue</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07090e;
-      --card-bg: rgba(18, 24, 38, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #10b981;
-      --primary-glow: rgba(16, 185, 129, 0.35);
-      --accent: #6366f1;
-      --accent-glow: rgba(99, 102, 241, 0.4);
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --spotify: #1db954;
-      --apple: #b14bf4;
-      --podbean: #97c93e;
-      --youtube: #ff2a2a;
+      --bg: #090a0c;
+      --surface-1: #111317;
+      --surface-2: #16181f;
+      --surface-3: #1d2029;
+      --border: rgba(255, 255, 255, 0.07);
+      --border-hover: rgba(255, 255, 255, 0.14);
+      --text: #ededef;
+      --text-muted: #8b8e99;
+      --text-subtle: #5b5e68;
+      --accent: #5e6ad2;
+      --accent-hover: #4f5bc4;
+      --accent-subtle: rgba(94, 106, 210, 0.12);
+      --success: #27c578;
+      --success-subtle: rgba(39, 197, 120, 0.12);
+      --warning: #f59e0b;
+      --warning-subtle: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-subtle: rgba(239, 68, 68, 0.12);
+      --radius: 8px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
-      background-image: 
-        radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
-        radial-gradient(circle at 10% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 90% 70%, rgba(177, 75, 244, 0.08) 0%, transparent 40%);
-      background-attachment: fixed;
       color: var(--text);
-      line-height: 1.6;
-      padding: 2rem 1.25rem 4rem;
-      min-height: 100vh;
+      line-height: 1.5;
+      font-size: 13.5px;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 0 4rem 0;
     }
 
-    .container { max-width: 1040px; margin: 0 auto; }
-
-    /* Top Nav / Cockpit Bar */
-    .cockpit-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 21, 35, 0.65);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 9999px;
-      padding: 0.5rem 1.25rem;
-      margin-bottom: 2.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-weight: 800;
-      font-size: 1.05rem;
-      letter-spacing: -0.02em;
-    }
-    .brand-icon {
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, var(--accent), var(--primary));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.95rem;
-      box-shadow: 0 2px 10px var(--accent-glow);
-    }
-
-    /* Autopilot Pill Switch */
-    .autopilot-pill {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 0.3rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s ease;
-    }
-    .autopilot-pill:hover {
-      background: rgba(16, 185, 129, 0.2);
-      box-shadow: 0 0 16px var(--primary-glow);
-    }
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--primary);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--primary);
-      animation: pulse 1.6s infinite ease-in-out;
-    }
-    @keyframes pulse {
-      0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px var(--primary); }
-      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--primary); }
-      100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 4px var(--primary); }
-    }
-
-    /* Hero Section */
-    .hero {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.3rem 0.9rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      background: rgba(99, 102, 241, 0.12);
-      color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      margin-bottom: 1rem;
-      letter-spacing: 0.05em;
-    }
-    h1 {
-      font-size: 2.75rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 0.75rem;
-      background: linear-gradient(180deg, #ffffff 40%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .hero p {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      max-width: 640px;
-      margin: 0 auto 1.5rem;
-    }
-
-    /* Pipeline Stage Stepper */
-    .stage-stepper {
-      display: flex;
-      justify-content: space-between;
-      position: relative;
-      background: rgba(18, 24, 38, 0.6);
+    /* Top Application Bar */
+    .app-header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 10, 12, 0.85);
       backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      border-radius: 1rem;
-      padding: 1rem 1.5rem;
-      margin-bottom: 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .stage-item {
+    .header-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 52px;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #64748b;
-      transition: all 0.3s ease;
-    }
-    .stage-item.active {
-      color: #fff;
-    }
-    .stage-item.completed {
-      color: var(--primary);
-    }
-    .stage-num {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-    }
-    .stage-item.active .stage-num {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      box-shadow: 0 0 10px var(--accent-glow);
-    }
-    .stage-item.completed .stage-num {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #07090e;
-    }
-
-    /* Cards */
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 1.25rem;
-      padding: 1.75rem;
-      margin-bottom: 1.75rem;
-      box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.4);
-      transition: border-color 0.3s ease;
-    }
-    .card-header-row {
-      display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-    }
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      letter-spacing: -0.01em;
-    }
-
-    /* Self-Driving Cockpit Tabs */
-    .platform-selector {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 0.65rem;
-      margin-bottom: 1.5rem;
-    }
-    .platform-btn {
-      background: rgba(15, 21, 35, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 0.85rem;
-      padding: 0.85rem 0.75rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 0.85rem;
-    }
-    .platform-btn:hover {
-      background: rgba(30, 41, 59, 0.8);
-      color: #fff;
-      transform: translateY(-2px);
-    }
-    .platform-btn.active {
-      background: rgba(99, 102, 241, 0.15);
-      border-color: var(--accent);
-      color: #fff;
-      box-shadow: 0 4px 16px var(--accent-glow);
-    }
-    .platform-btn[data-platform="spotify"].active {
-      background: rgba(29, 185, 84, 0.15);
-      border-color: var(--spotify);
-      box-shadow: 0 4px 16px rgba(29, 185, 84, 0.3);
-    }
-    .platform-btn[data-platform="apple"].active {
-      background: rgba(177, 75, 244, 0.15);
-      border-color: var(--apple);
-      box-shadow: 0 4px 16px rgba(177, 75, 244, 0.3);
-    }
-    .platform-btn[data-platform="youtube"].active {
-      background: rgba(255, 42, 42, 0.15);
-      border-color: var(--youtube);
-      box-shadow: 0 4px 16px rgba(255, 42, 42, 0.3);
-    }
-    .platform-btn[data-platform="podbean"].active {
-      background: rgba(151, 201, 62, 0.15);
-      border-color: var(--podbean);
-      box-shadow: 0 4px 16px rgba(151, 201, 62, 0.3);
-    }
-    .platform-icon-box { font-size: 1.4rem; }
-
-    /* Autopilot 1-Click Sync Banner */
-    .auto-sync-banner {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 1rem;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       gap: 1rem;
-      flex-wrap: wrap;
     }
-    .sync-info h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
+    .brand-section {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-    }
-    .sync-info p {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-    }
-    .bookmarklet-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: linear-gradient(135deg, var(--accent), #4f46e5);
-      color: #fff;
-      padding: 0.65rem 1.25rem;
-      border-radius: 0.65rem;
-      font-weight: 700;
-      font-size: 0.9rem;
-      text-decoration: none;
-      cursor: grab;
-      box-shadow: 0 4px 14px var(--accent-glow);
-      transition: all 0.2s ease;
-      user-select: none;
-    }
-    .bookmarklet-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px var(--accent-glow);
-    }
-
-    /* URL Autopilot Input Box */
-    .url-autopilot-box {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-    }
-    .url-input {
-      flex: 1;
-      background: rgba(11, 16, 28, 0.9);
-      border: 1px solid var(--card-border);
-      border-radius: 0.65rem;
-      padding: 0.75rem 1rem;
-      color: #fff;
-      font-family: inherit;
-      font-size: 0.95rem;
-      transition: border-color 0.2s;
-    }
-    .url-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 12px var(--primary-glow);
-    }
-
-    /* Drop Zone */
-    .drop-zone {
-      border: 2px dashed rgba(255, 255, 255, 0.12);
-      border-radius: 1rem;
-      padding: 2.25rem 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: rgba(11, 16, 28, 0.4);
-    }
-    .drop-zone:hover, .drop-zone.dragover {
-      border-color: var(--primary);
-      background: rgba(16, 185, 129, 0.05);
-      transform: scale(1.005);
-    }
-    .drop-icon { font-size: 2.25rem; margin-bottom: 0.5rem; }
-    .drop-text { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem; }
-    .drop-sub { font-size: 0.85rem; color: var(--text-muted); }
-
-    /* Mission Control Terminal Log HUD */
-    .telemetry-console {
-      background: #040609;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 0.85rem;
-      padding: 1rem 1.25rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      max-height: 180px;
-      overflow-y: auto;
-      margin-top: 1rem;
-    }
-    .telemetry-line {
-      line-height: 1.6;
-      display: flex;
       gap: 0.75rem;
     }
-    .telemetry-time { color: #64748b; user-select: none; }
-    .telemetry-msg { color: #cbd5e1; }
-    .telemetry-success { color: #34d399; }
-    .telemetry-warning { color: #fbbf24; }
-    .telemetry-accent { color: #818cf8; }
+    .app-logo {
+      width: 24px;
+      height: 24px;
+      color: var(--accent);
+    }
+    .app-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    .version-tag {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-subtle);
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* Segmented Platform Switcher */
+    .segmented-control {
+      display: inline-flex;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .segment-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .segment-btn:hover { color: var(--text); }
+    .segment-btn.active {
+      background: var(--surface-3);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Main Container */
+    .main-content {
+      max-width: 1180px;
+      margin: 1.75rem auto 0;
+      padding: 0 1.5rem;
+    }
+
+    /* Source Inspector Panel */
+    .source-panel {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .source-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Command / URL Input Row */
+    .command-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      width: 16px;
+      height: 16px;
+    }
+    .text-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px 8px 36px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .text-input:focus {
+      border-color: var(--accent);
+      background: var(--surface-3);
+    }
 
     /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 0.65rem 1.25rem;
-      border-radius: 0.65rem;
-      font-weight: 700;
-      font-size: 0.9rem;
+      gap: 6px;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
+      border: 1px solid transparent;
       text-decoration: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
     }
     .btn-primary {
-      background: var(--primary);
-      color: #07090e;
-      box-shadow: 0 4px 14px var(--primary-glow);
-    }
-    .btn-primary:hover {
-      background: #059669;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px var(--primary-glow);
-    }
-    .btn-secondary {
-      background: rgba(30, 41, 59, 0.7);
-      color: var(--text);
-      border: 1px solid var(--card-border);
-    }
-    .btn-secondary:hover {
-      background: rgba(51, 65, 85, 0.8);
-      color: #fff;
-    }
-    .btn-accent {
       background: var(--accent);
       color: #fff;
-      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: var(--surface-3);
+      border-color: var(--border-hover);
+      color: #fff;
+    }
+    .btn-bookmarklet {
+      background: var(--accent-subtle);
+      border-color: rgba(94, 106, 210, 0.3);
+      color: #9ba4ee;
+      cursor: grab;
+    }
+    .btn-bookmarklet:hover {
+      background: rgba(94, 106, 210, 0.2);
+      color: #fff;
     }
 
-    /* Table */
-    .results-table {
+    /* Ingestion Grid: Bridge & Dropzone */
+    .ingest-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1rem;
+    }
+    .bridge-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .bridge-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      line-height: 1.45;
+    }
+    .bridge-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Drop Target */
+    .drop-target {
+      background: var(--surface-2);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .drop-target:hover, .drop-target.dragover {
+      border-color: var(--accent);
+      background: var(--surface-3);
+    }
+    .drop-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: var(--surface-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .drop-info {
+      flex: 1;
+    }
+    .drop-info-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+    }
+    .drop-info-sub {
+      font-size: 11.5px;
+      color: var(--text-subtle);
+    }
+
+    /* Notification / Notice bar */
+    .info-strip {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .info-strip-icon { color: var(--accent); flex-shrink: 0; }
+
+    /* Library Workspace & Table */
+    .library-panel {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .library-toolbar {
+      padding: 12px 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--surface-1);
+    }
+    .library-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .status-count-pill {
+      font-size: 11.5px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      font-weight: 400;
+      background: var(--surface-2);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+    }
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .filter-input {
+      height: 28px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0 10px;
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
+      width: 180px;
+      transition: width 0.2s ease, border-color 0.15s ease;
+    }
+    .filter-input:focus {
+      width: 240px;
+      border-color: var(--accent);
+    }
+
+    /* Table Styles */
+    .table-container {
+      max-height: 520px;
+      overflow-y: auto;
+    }
+    .data-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
-    .results-table th, .results-table td {
-      padding: 0.75rem;
+      font-size: 12.5px;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .results-table th {
-      color: var(--text-muted);
+    .data-table th {
+      position: sticky;
+      top: 0;
+      background: var(--surface-2);
+      color: var(--text-subtle);
+      font-size: 11px;
       font-weight: 600;
-      font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
     }
-    .status-badge {
-      display: inline-block;
-      padding: 0.2rem 0.55rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
+    .data-table td {
+      padding: 9px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text);
     }
-    .status-resolved { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-ambiguous { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .status-notfound { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .status-custom { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .col-num {
+      width: 48px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-subtle);
+      font-size: 11.5px;
+    }
+    .show-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .show-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .show-name {
+      font-weight: 500;
+      color: #fff;
+    }
+    .show-author {
+      color: var(--text-muted);
+    }
+    .feed-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 380px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .feed-link:hover { color: var(--text); }
 
-    /* Modals */
-    .modal-overlay {
+    /* Pill Badges */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .pill-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+    .pill-resolved {
+      background: var(--success-subtle);
+      color: #3dd68c;
+    }
+    .pill-resolved .pill-dot { background: #3dd68c; }
+    .pill-moved {
+      background: var(--warning-subtle);
+      color: #fbbf24;
+    }
+    .pill-moved .pill-dot { background: #fbbf24; }
+    .pill-ambiguous {
+      background: var(--warning-subtle);
+      color: #fbbf24;
+    }
+    .pill-ambiguous .pill-dot { background: #fbbf24; }
+    .pill-notfound {
+      background: var(--danger-subtle);
+      color: #f87171;
+    }
+    .pill-notfound .pill-dot { background: #f87171; }
+    .pill-custom {
+      background: var(--accent-subtle);
+      color: #a5b4fc;
+    }
+    .pill-custom .pill-dot { background: #a5b4fc; }
+
+    /* Modal Sheet */
+    .modal-backdrop {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(7, 9, 14, 0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 1rem;
     }
-    .modal-box {
-      background: #111726;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 1.25rem;
-      max-width: 640px;
-      width: 100%;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 1.75rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    .modal-sheet {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 540px;
+      max-width: 90vw;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
     }
-    .modal-header {
+    .modal-header-bar {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 0.75rem;
     }
-    .modal-title { font-size: 1.25rem; font-weight: 700; }
-    .modal-close {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.6rem;
-      cursor: pointer;
+    .modal-header-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
     }
-    .modal-close:hover { color: #fff; }
-    .app-guide-card {
-      background: rgba(18, 24, 38, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
+    .modal-body {
+      padding: 16px 18px;
     }
-    .app-guide-title {
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 0.3rem;
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-2);
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      justify-content: flex-end;
+      gap: 8px;
     }
-    .app-guide-steps {
-      font-size: 0.88rem;
-      color: #cbd5e1;
-      padding-left: 1.25rem;
+    .guide-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: var(--surface-2);
+    }
+    .guide-app-name {
+      font-weight: 600;
+      font-size: 12.5px;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .guide-path {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Ambiguity Candidate Cards */
+    .candidate-card-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      display: block;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+    .candidate-card-btn:hover {
+      border-color: var(--accent);
+      background: var(--surface-3);
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Top Cockpit Bar -->
-    <div class="cockpit-bar">
-      <div class="brand">
-        <div class="brand-icon">🎙️</div>
-        <span>Podcast Rescue</span>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-section">
+        <svg class="app-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+          <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+          <circle cx="12" cy="12" r="2"/>
+          <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+          <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/>
+        </svg>
+        <span class="app-title">Podcast Rescue</span>
+        <span class="version-tag">0.2.0</span>
       </div>
 
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <div class="autopilot-pill" id="autopilot-toggle" onclick="toggleAutopilot()">
-          <span class="pulse-dot"></span>
-          <span id="autopilot-status-text">Autopilot: ON</span>
-        </div>
-        <button class="btn btn-secondary" onclick="openImportGuide()" style="padding: 0.35rem 0.85rem; font-size: 0.8rem; border-radius: 9999px;">
-          📱 Import Guide
+      <!-- Segmented Platform Controls -->
+      <div class="segmented-control">
+        <button class="segment-btn active" data-platform="podbean" onclick="setPlatform('podbean')">Podbean</button>
+        <button class="segment-btn" data-platform="spotify" onclick="setPlatform('spotify')">Spotify</button>
+        <button class="segment-btn" data-platform="apple" onclick="setPlatform('apple')">Apple</button>
+        <button class="segment-btn" data-platform="youtube" onclick="setPlatform('youtube')">YouTube Music</button>
+        <button class="segment-btn" data-platform="clean" onclick="setPlatform('clean')">OPML Cleaner</button>
+      </div>
+
+      <!-- Utilities -->
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="openModal('custom-feed-modal')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add RSS Feed
         </button>
+        <button class="btn btn-secondary" onclick="openModal('guide-modal')">Import Guide</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="main-content">
+    <!-- Ingestion Panel -->
+    <div class="source-panel">
+      <div class="source-panel-header">
+        <div>
+          <div class="panel-title" id="source-title">Podbean Subscriptions</div>
+          <div class="panel-subtitle" id="source-subtitle">Paginates 36 shows per page. Auto-crawler extracts all pages into a unified list.</div>
+        </div>
+      </div>
+
+      <!-- Direct URL Input Bar -->
+      <div class="command-row">
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" class="text-input" id="url-input" placeholder="Paste user profile URL (e.g. https://www.podbean.com/user-xxxx/following) or show link">
+        </div>
+        <button class="btn btn-primary" onclick="handleScrapeUrl()">Fetch & Crawl</button>
+      </div>
+
+      <!-- Two-Column Ingestion Workspace -->
+      <div class="ingest-grid">
+        <!-- 1-Click Browser Sync Bridge -->
+        <div class="bridge-box">
+          <div>
+            <div style="font-weight: 600; color: #fff; margin-bottom: 4px; font-size: 13px;">1-Click Browser Sync</div>
+            <div class="bridge-desc" id="bridge-instructions">
+              Drag the button to your Bookmarks bar. Navigate to your Podbean Following page and click it to crawl all pages in seconds.
+            </div>
+          </div>
+          <div class="bridge-footer">
+            <a class="btn btn-bookmarklet" id="bookmarklet-btn" href="#">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+              Rescue Library
+            </a>
+            <button class="btn btn-secondary" id="btn-launch-platform" onclick="openServicePlatform()">
+              Open Platform
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Drop Zone -->
+        <div class="drop-target" id="drop-target">
+          <div class="drop-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <div class="drop-info">
+            <div class="drop-info-title">Drop HAR, JSON, or OPML files</div>
+            <div class="drop-info-sub">Multi-file supported &bull; Automatic deduplication across pages</div>
+          </div>
+          <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.opml,.xml" multiple>
+        </div>
+      </div>
+
+      <div class="info-strip">
+        <svg class="info-strip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span id="platform-notice">Podbean renders 36 subscriptions per page. The sync crawler walks Pages 1, 2, 3... to extract your complete library.</span>
       </div>
     </div>
 
-    <!-- Hero Section -->
-    <div class="hero">
-      <div class="hero-badge">⚡ Self-Driving Migration Engine</div>
-      <h1>Zero-Friction Podcast Rescue</h1>
-      <p>Automated subscription rescuer. Drag the 1-click sync button or paste any profile URL — the autopilot handles extraction, resolution, feed redirection, and OPML compilation automatically.</p>
-    </div>
-
-    <!-- Pipeline Stage Stepper -->
-    <div class="stage-stepper" id="pipeline-stepper">
-      <div class="stage-item active" id="stage-1">
-        <div class="stage-num">1</div>
-        <span>Capture</span>
-      </div>
-      <div style="color: #334155;">&rarr;</div>
-      <div class="stage-item" id="stage-2">
-        <div class="stage-num">2</div>
-        <span>Apple Directory Resolve</span>
-      </div>
-      <div style="color: #334155;">&rarr;</div>
-      <div class="stage-item" id="stage-3">
-        <div class="stage-num">3</div>
-        <span>Feed Inspection</span>
-      </div>
-      <div style="color: #334155;">&rarr;</div>
-      <div class="stage-item" id="stage-4">
-        <div class="stage-num">4</div>
-        <span>Export Ready</span>
-      </div>
-    </div>
-
-    <!-- Cockpit Ingestion Card -->
-    <div class="card">
-      <div class="card-header-row">
-        <div class="card-title">
-          <span>🛸</span>
-          <span>Mission Control & Auto-Capture</span>
+    <!-- Subscriptions Library Table -->
+    <div class="library-panel" id="library-panel" style="display: none;">
+      <div class="library-toolbar">
+        <div class="library-status">
+          <span>Subscriptions</span>
+          <span class="status-count-pill" id="total-badge">0 shows</span>
         </div>
-        <button class="btn btn-secondary" onclick="openCustomFeedModal()" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
-          🔒 + Private / Patreon Feed
-        </button>
-      </div>
-
-      <!-- Platform Selection -->
-      <div class="platform-selector">
-        <div class="platform-btn active" data-platform="podbean" onclick="selectPlatform('podbean')">
-          <div class="platform-icon-box">🫘</div>
-          <span>Podbean</span>
-        </div>
-        <div class="platform-btn" data-platform="spotify" onclick="selectPlatform('spotify')">
-          <div class="platform-icon-box">🟢</div>
-          <span>Spotify</span>
-        </div>
-        <div class="platform-btn" data-platform="apple" onclick="selectPlatform('apple')">
-          <div class="platform-icon-box">🍎</div>
-          <span>Apple Podcasts</span>
-        </div>
-        <div class="platform-btn" data-platform="youtube" onclick="selectPlatform('youtube')">
-          <div class="platform-icon-box">▶️</div>
-          <span>YouTube Music</span>
-        </div>
-        <div class="platform-btn" data-platform="clean" onclick="selectPlatform('clean')">
-          <div class="platform-icon-box">🩺</div>
-          <span>Clean OPML</span>
-        </div>
-      </div>
-
-      <!-- Method A: 1-Click Browser Sync Bookmarklet -->
-      <div class="auto-sync-banner" id="sync-banner">
-        <div class="sync-info">
-          <h3><span>⚡</span> <span id="sync-banner-title">1-Click Auto-Extractor</span></h3>
-          <p id="sync-banner-desc">Drag this button to your Bookmarks bar. Click it on Podbean to instantly send your entire library here!</p>
-        </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-          <a class="bookmarklet-btn" id="bookmarklet-link" href="#">
-            <span>🎙️</span>
-            <span>Rescue My Shows</span>
-          </a>
-          <button class="btn btn-secondary" onclick="openTargetPlatform()" style="font-size: 0.85rem;" id="btn-launch-platform">
-            Open Platform &rarr;
+        <div class="toolbar-actions">
+          <input type="text" class="filter-input" id="filter-input" placeholder="Filter by show or publisher..." oninput="filterTable()">
+          <button class="btn btn-secondary" onclick="exportFile('csv')">CSV</button>
+          <button class="btn btn-secondary" onclick="exportFile('json')">JSON</button>
+          <button class="btn btn-primary" onclick="exportFile('opml')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export OPML
           </button>
         </div>
       </div>
 
-      <!-- Method B: Direct URL Input -->
-      <div class="url-autopilot-box">
-        <input type="text" class="url-input" id="url-input" placeholder="Or paste public profile URL, show link, or podcast RSS feed (e.g. https://www.podbean.com/user-...)">
-        <button class="btn btn-primary" onclick="autopilotScrapeUrl()">🚀 Auto-Fetch</button>
+      <!-- Candidate Selection Sheet (if ambiguity occurs) -->
+      <div id="ambiguity-banner" style="display: none; padding: 12px 18px; background: var(--surface-2); border-bottom: 1px solid var(--border);">
+        <div style="font-weight: 600; color: #fbbf24; font-size: 12.5px; margin-bottom: 6px;">Multiple candidate feeds found. Select correct publisher:</div>
+        <div id="candidate-list"></div>
       </div>
 
-      <!-- Method C: Instant Drop Zone -->
-      <div class="drop-zone" id="drop-zone">
-        <div class="drop-icon">📥</div>
-        <div class="drop-text" id="drop-text">Or drop any .har, .json, .opml, or text file here (multi-file supported)</div>
-        <div class="drop-sub">Drop one or more page exports — Autopilot merges and deduplicates all shows automatically</div>
-        <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.opml,.xml" multiple>
-      </div>
-
-      <!-- Mission Control Telemetry HUD -->
-      <div class="telemetry-console" id="telemetry-console">
-        <div class="telemetry-line">
-          <span class="telemetry-time">[00:00:01]</span>
-          <span class="telemetry-accent">🛸 Autopilot Engine initialized on localhost:3000. Ready for ingestion.</span>
-        </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th>Show Title</th>
+              <th>Publisher</th>
+              <th>Status</th>
+              <th>Canonical RSS Feed</th>
+            </tr>
+          </thead>
+          <tbody id="library-tbody"></tbody>
+        </table>
       </div>
     </div>
+  </main>
 
-    <!-- Active Shows & Resolution Dashboard -->
-    <div class="card" id="resolution-card" style="display: none;">
-      <div class="card-header-row">
-        <div class="card-title">
-          <span>✨</span>
-          <span id="summary-header">Extracted Podcasts</span>
+  <!-- Modal: Import Instructions -->
+  <div class="modal-backdrop" id="guide-modal" onclick="if(event.target === this) closeModal('guide-modal')">
+    <div class="modal-sheet">
+      <div class="modal-header-bar">
+        <div class="modal-header-title">Importing OPML into Podcast Clients</div>
+        <button class="btn btn-secondary" style="height: 24px; padding: 0 8px;" onclick="closeModal('guide-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="guide-item">
+          <div class="guide-app-name">AntennaPod (Android)</div>
+          <div class="guide-path">Subscriptions &rarr; + (Add Podcast) &rarr; Import / Export &rarr; OPML Import</div>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn btn-secondary" onclick="exportCsvFile()" id="btn-export-csv">Download CSV</button>
-          <button class="btn btn-secondary" onclick="exportJsonFile()" id="btn-export-json">Download JSON</button>
-          <button class="btn btn-primary" onclick="exportOpmlFile()" id="btn-export-opml">Download OPML XML</button>
+        <div class="guide-item">
+          <div class="guide-app-name">Pocket Casts (iOS & Android)</div>
+          <div class="guide-path">Profile &rarr; Settings &rarr; Storage & Data Use &rarr; Import OPML</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-app-name">Overcast (iOS)</div>
+          <div class="guide-path">Settings &rarr; Nitpicky Details &rarr; Import OPML</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-app-name">Apple Podcasts (macOS)</div>
+          <div class="guide-path">File menu &rarr; Add Show by URL... or drag .opml onto the Podcasts window</div>
         </div>
       </div>
-
-      <!-- Ambiguity Disambiguation Section -->
-      <div id="ambiguity-section" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 1rem;">
-        <div style="font-weight: 700; color: #fbbf24; margin-bottom: 0.25rem;">⚠️ Disambiguation Required</div>
-        <p style="font-size: 0.85rem; color: var(--text-muted);" id="ambiguity-desc">Select the canonical show feed:</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; margin-top: 0.75rem;" id="candidate-grid"></div>
-      </div>
-
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Show Title</th>
-            <th>Publisher / Artist</th>
-            <th>Status</th>
-            <th>Resolved Feed URL</th>
-          </tr>
-        </thead>
-        <tbody id="results-body"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Modal: How to Import OPML -->
-  <div class="modal-overlay" id="import-guide-modal" onclick="if(event.target === this) closeImportGuide()">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">📱 Import OPML into Your Podcast App</div>
-        <button class="modal-close" onclick="closeImportGuide()">&times;</button>
-      </div>
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Once your <code>podcasts_rescue.opml</code> is downloaded, follow these 2-step instructions for your client:
-      </p>
-
-      <div class="app-guide-card">
-        <div class="app-guide-title">📻 AntennaPod (Android & F-Droid)</div>
-        <ol class="app-guide-steps">
-          <li>Open AntennaPod &rarr; Tap <strong>Subscriptions</strong>.</li>
-          <li>Tap <strong>+</strong> &rarr; <strong>Import / Export</strong> &rarr; <strong>OPML Import</strong>.</li>
-        </ol>
-      </div>
-
-      <div class="app-guide-card">
-        <div class="app-guide-title">🔴 Pocket Casts (iOS, Android & Web)</div>
-        <ol class="app-guide-steps">
-          <li>Open Pocket Casts &rarr; Tap <strong>Profile</strong> &rarr; <strong>Settings (gear)</strong>.</li>
-          <li>Tap <strong>Storage & Data Use</strong> &rarr; <strong>Import OPML</strong>.</li>
-        </ol>
-      </div>
-
-      <div class="app-guide-card">
-        <div class="app-guide-title">🟠 Overcast (iOS)</div>
-        <ol class="app-guide-steps">
-          <li>Open Overcast &rarr; Tap <strong>Settings (gear icon)</strong>.</li>
-          <li>Scroll to <strong>Nitpicky Details</strong> &rarr; <strong>Import OPML</strong>.</li>
-        </ol>
-      </div>
-
-      <div class="app-guide-card">
-        <div class="app-guide-title">🍎 Apple Podcasts (macOS & iOS)</div>
-        <ol class="app-guide-steps">
-          <li>On Mac: In top menu click <strong>File</strong> &rarr; <strong>Add Show by URL / Import</strong>.</li>
-        </ol>
-      </div>
-
-      <div style="text-align: right; margin-top: 1rem;">
-        <button class="btn btn-secondary" onclick="closeImportGuide()">Close</button>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('guide-modal')">Done</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Add Custom Private Feed -->
-  <div class="modal-overlay" id="custom-feed-modal" onclick="if(event.target === this) closeCustomFeedModal()">
-    <div class="modal-box" style="max-width: 480px;">
-      <div class="modal-header">
-        <div class="modal-title">🔒 Add Private / Patreon Feed</div>
-        <button class="modal-close" onclick="closeCustomFeedModal()">&times;</button>
+  <!-- Modal: Custom RSS Feed -->
+  <div class="modal-backdrop" id="custom-feed-modal" onclick="if(event.target === this) closeModal('custom-feed-modal')">
+    <div class="modal-sheet" style="width: 440px;">
+      <div class="modal-header-bar">
+        <div class="modal-header-title">Add Private / Member RSS Feed</div>
+        <button class="btn btn-secondary" style="height: 24px; padding: 0 8px;" onclick="closeModal('custom-feed-modal')">&times;</button>
       </div>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Add private member feeds or patron RSS URLs directly into the rescue export.
-      </p>
-      <input type="text" class="url-input" id="custom-feed-title" placeholder="Show Title (e.g. Hardcore History Bonus)" style="margin-bottom: 0.75rem;">
-      <input type="text" class="url-input" id="custom-feed-url" placeholder="Direct RSS Feed URL (https://feed.patreon.com/...)">
-
-      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
-        <button class="btn btn-secondary" onclick="closeCustomFeedModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="addCustomFeed()">Add & Resolve</button>
+      <div class="modal-body">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px;">Show Name</label>
+          <input type="text" class="text-input" id="custom-title-input" placeholder="e.g. Patreon Bonus Feed" style="padding-left: 12px;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px;">Feed URL</label>
+          <input type="text" class="text-input" id="custom-url-input" placeholder="https://feed.patreon.com/rss/..." style="padding-left: 12px;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('custom-feed-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitCustomFeed()">Add Feed</button>
       </div>
     </div>
   </div>
 
   <script>
-    let autopilot = true;
     let currentPlatform = 'podbean';
-    let parsedShows = [];
-    let resolvedResults = [];
+    let libraryShows = [];
+    let resolvedMap = new Map();
 
-    const platformConfig = {
+    const platforms = {
       podbean: {
-        title: "Podbean Multi-Page Auto-Extractor",
-        desc: "Podbean splits subscriptions into 36 shows per page (76 shows = 3 pages). Drag this button to your Bookmarks bar, open Podbean Following, and click it — it automatically crawls and captures all pages!",
+        title: "Podbean Subscriptions",
+        subtitle: "Paginates 36 shows per page. Auto-crawler extracts all pages into a unified list.",
+        notice: "Podbean displays 36 subscriptions per page. The sync crawler walks Pages 1, 2, 3... to extract your complete library.",
         url: "https://www.podbean.com"
       },
       spotify: {
-        title: "Spotify Library Auto-Extractor",
-        desc: "Drag the button to your Bookmarks bar, navigate to Spotify Web Player Podcasts, and click it!",
+        title: "Spotify Podcast Library",
+        subtitle: "Virtual list extraction. Sync crawler scrolls and captures followed shows.",
+        notice: "Spotify Web Player virtualizes show rows. The sync crawler scrolls the container to index all saved podcasts.",
         url: "https://open.spotify.com/collection/podcasts"
       },
       apple: {
-        title: "Apple Podcasts Auto-Extractor",
-        desc: "Drag the button to your Bookmarks bar, open podcasts.apple.com, and click it!",
+        title: "Apple Podcasts Web",
+        subtitle: "Extracts subscribed directory podcasts directly from Apple ID session.",
+        notice: "Open your Subscribed Shows on podcasts.apple.com and trigger the sync crawler.",
         url: "https://podcasts.apple.com"
       },
       youtube: {
-        title: "YouTube Music Auto-Extractor",
-        desc: "Drag the button to Bookmarks, open music.youtube.com Podcasts, and click it!",
+        title: "YouTube Music Podcasts",
+        subtitle: "Extracts podcasts from YouTube Music Library channel subscriptions.",
+        notice: "Open music.youtube.com/library/podcasts and click the bookmarklet.",
         url: "https://music.youtube.com/library/podcasts"
       },
       clean: {
-        title: "OPML Health Cleaner",
-        desc: "Drop any old OPML file to automatically ping feeds, follow 301/308 redirects, and revive links.",
+        title: "OPML Health Doctor",
+        subtitle: "Upload existing OPML to inspect HTTP 301/308 redirects and fix dead feeds.",
+        notice: "Drop an OPML backup from AntennaPod or Google Podcasts to verify canonical URLs.",
         url: ""
       }
     };
 
-    function logTelemetry(msg, type = 'normal') {
-      const consoleEl = document.getElementById('telemetry-console');
-      const now = new Date();
-      const timeStr = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
-
-      const line = document.createElement('div');
-      line.className = 'telemetry-line';
-
-      const timeSpan = document.createElement('span');
-      timeSpan.className = 'telemetry-time';
-      timeSpan.textContent = timeStr;
-
-      const msgSpan = document.createElement('span');
-      if (type === 'success') msgSpan.className = 'telemetry-success';
-      else if (type === 'warning') msgSpan.className = 'telemetry-warning';
-      else if (type === 'accent') msgSpan.className = 'telemetry-accent';
-      else msgSpan.className = 'telemetry-msg';
-      msgSpan.textContent = msg;
-
-      line.append(timeSpan, msgSpan);
-      consoleEl.appendChild(line);
-      consoleEl.scrollTop = consoleEl.scrollHeight;
-    }
-
-    function toggleAutopilot() {
-      autopilot = !autopilot;
-      const statusText = document.getElementById('autopilot-status-text');
-      const pill = document.getElementById('autopilot-toggle');
-      if (autopilot) {
-        statusText.textContent = 'Autopilot: ON';
-        pill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-        pill.style.color = 'var(--primary)';
-        logTelemetry('⚡ Autopilot engaged: Extraction and resolution will proceed automatically.', 'accent');
-      } else {
-        statusText.textContent = 'Autopilot: OFF';
-        pill.style.borderColor = 'rgba(148, 163, 184, 0.3)';
-        pill.style.color = '#94a3b8';
-        logTelemetry('Autopilot paused: Manual execution required.', 'warning');
-      }
-    }
-
-    function setStage(stageNum) {
-      for (let i = 1; i <= 4; i++) {
-        const el = document.getElementById(`stage-${i}`);
-        el.classList.remove('active', 'completed');
-        if (i < stageNum) el.classList.add('completed');
-        else if (i === stageNum) el.classList.add('active');
-      }
-    }
-
-    function selectPlatform(p) {
+    function setPlatform(p) {
       currentPlatform = p;
-      document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector(`[data-platform="${p}"]`).classList.add('active');
+      document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`.segment-btn[data-platform="${p}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
 
-      const conf = platformConfig[p];
-      document.getElementById('sync-banner-title').textContent = conf.title;
-      document.getElementById('sync-banner-desc').textContent = conf.desc;
+      const conf = platforms[p];
+      document.getElementById('source-title').textContent = conf.title;
+      document.getElementById('source-subtitle').textContent = conf.subtitle;
+      document.getElementById('platform-notice').textContent = conf.notice;
       document.getElementById('btn-launch-platform').style.display = conf.url ? 'inline-flex' : 'none';
 
       setupBookmarklet(p);
-      logTelemetry(`Switched focus to ${p.toUpperCase()} mode.`, 'normal');
     }
 
-    function openTargetPlatform() {
-      const url = platformConfig[currentPlatform].url;
+    function openServicePlatform() {
+      const url = platforms[currentPlatform].url;
       if (url) window.open(url, '_blank');
     }
 
-    // Build the dynamic 1-click Bookmarklet script with multi-page crawling
     function setupBookmarklet(platform) {
       const script = `javascript:(async function(){
         try {
-          var overlay = document.createElement('div');
-          overlay.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999999;background:#0f172a;color:#fff;padding:16px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6);font-family:system-ui,sans-serif;font-size:14px;border:1px solid #10b981;max-width:340px;';
-          var titleDiv = document.createElement('div');
-          titleDiv.style.cssText = 'font-weight:700;color:#10b981;margin-bottom:6px;font-size:15px;display:flex;align-items:center;gap:6px;';
-          titleDiv.textContent = '🎙️ Podcast Rescue Auto-Crawler';
-          var statusEl = document.createElement('div');
-          statusEl.textContent = 'Extracting library...';
-          overlay.append(titleDiv, statusEl);
-          document.body.appendChild(overlay);
+          var bar = document.createElement('div');
+          bar.style.cssText = 'position:fixed;top:16px;right:16px;z-index:999999;background:#111317;color:#ededef;padding:12px 16px;border-radius:6px;box-shadow:0 12px 30px rgba(0,0,0,0.6);font-family:system-ui,sans-serif;font-size:13px;border:1px solid rgba(255,255,255,0.1);max-width:320px;';
+          var titleEl = document.createElement('div');
+          titleEl.style.cssText = 'font-weight:600;color:#fff;margin-bottom:4px;';
+          titleEl.textContent = 'Podcast Rescue Sync';
+          var statEl = document.createElement('div');
+          statEl.textContent = 'Indexing page...';
+          bar.append(titleEl, statEl);
+          document.body.appendChild(bar);
 
-          var shows = [];
+          var list = [];
           var seen = {};
 
-          function extractFromDoc(doc, src) {
-            var found = 0;
-            var elements = doc.querySelectorAll('a, [data-dir-podcast-title], .card-title, h3, h2');
-            elements.forEach(function(el){
+          function parseDoc(doc) {
+            var hits = 0;
+            var els = doc.querySelectorAll('a, [data-dir-podcast-title], .card-title, h3, h2');
+            els.forEach(function(el){
               var title = el.getAttribute('data-dir-podcast-title') || el.innerText || '';
               title = title.trim();
               var author = el.getAttribute('data-dir-author') || null;
               var href = el.getAttribute('href') || '';
               if (title.length > 2 && title.length < 100 && title.indexOf('\\n') === -1) {
-                var key = title.toLowerCase();
-                if (!seen[key] && (href.indexOf('podcast') !== -1 || href.indexOf('show') !== -1 || el.hasAttribute('data-dir-podcast-title'))) {
-                  seen[key] = true;
-                  shows.push({ title: title, author: author, source: src });
-                  found++;
+                var k = title.toLowerCase();
+                if (!seen[k] && (href.indexOf('podcast') !== -1 || href.indexOf('show') !== -1 || el.hasAttribute('data-dir-podcast-title'))) {
+                  seen[k] = true;
+                  list.push({ title: title, author: author, source: '${platform}' });
+                  hits++;
                 }
               }
             });
-            return found;
+            return hits;
           }
 
-          // 1. Initial page extraction
-          extractFromDoc(document, '${platform}');
-          statusEl.textContent = 'Page 1: ' + shows.length + ' shows found.';
+          parseDoc(document);
+          statEl.textContent = 'Found ' + list.length + ' shows on Page 1...';
 
-          // 2. Podbean Multi-Page Pagination Crawler
           if (window.location.hostname.indexOf('podbean.com') !== -1) {
             var page = 2;
-            var maxPages = 20;
-            while (page <= maxPages) {
-              statusEl.textContent = 'Crawling Page ' + page + '... (' + shows.length + ' shows so far)';
+            while (page <= 25) {
+              statEl.textContent = 'Indexing Page ' + page + ' (' + list.length + ' shows)...';
               var sep = window.location.href.indexOf('?') !== -1 ? '&' : '?';
-              var pageUrl = window.location.href.replace(/([?&])page=\\d+/, '') + sep + 'page=' + page;
+              var pUrl = window.location.href.replace(/([?&])page=\\d+/, '') + sep + 'page=' + page;
               try {
-                var resp = await fetch(pageUrl, { credentials: 'include' });
-                if (!resp.ok) break;
-                var htmlText = await resp.text();
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(htmlText, 'text/html');
-                var newCount = extractFromDoc(doc, '${platform}');
-                if (newCount === 0) break;
+                var r = await fetch(pUrl, { credentials: 'include' });
+                if (!r.ok) break;
+                var html = await r.text();
+                var pDoc = new DOMParser().parseFromString(html, 'text/html');
+                var count = parseDoc(pDoc);
+                if (count === 0) break;
                 page++;
-              } catch(e) {
-                break;
-              }
+              } catch(e) { break; }
             }
           }
 
-          // 3. Spotify Infinite-Scroll Loader
           if (window.location.hostname.indexOf('spotify.com') !== -1) {
             for (var s = 0; s < 10; s++) {
               window.scrollTo(0, document.body.scrollHeight);
               await new Promise(function(r){ setTimeout(r, 400); });
-              extractFromDoc(document, '${platform}');
-              statusEl.textContent = 'Scrolling Spotify: ' + shows.length + ' shows loaded...';
+              parseDoc(document);
+              statEl.textContent = 'Scrolling Spotify: ' + list.length + ' shows...';
             }
           }
 
-          statusEl.textContent = '✨ Total: ' + shows.length + ' shows found! Sending to Podcast Rescue...';
-
-          // 4. Send aggregated library to local server
+          statEl.textContent = 'Sending ' + list.length + ' shows to Podcast Rescue...';
           var res = await fetch('http://127.0.0.1:3000/api/auto-ingest', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ shows: shows, source: '${platform} Auto-Crawler' })
+            body: JSON.stringify({ shows: list, source: '${platform}' })
           });
           var data = await res.json();
-          statusEl.textContent = '✅ Rescued ' + data.count + ' shows! Switch back to your Podcast Rescue tab.';
-          setTimeout(function(){ overlay.remove(); }, 4000);
+          statEl.textContent = 'Synced ' + data.count + ' shows successfully.';
+          setTimeout(function(){ bar.remove(); }, 3500);
         } catch(err) {
-          alert('Podcast Rescue error: ' + err);
+          alert('Sync error: ' + err);
         }
       })();`;
 
-      const btn = document.getElementById('bookmarklet-link');
-      btn.href = script.replace(/\s+/g, ' ');
+      document.getElementById('bookmarklet-btn').href = script.replace(/\s+/g, ' ');
     }
 
-    // Direct URL Autopilot Scrape
-    async function autopilotScrapeUrl() {
+    // Direct Scrape URL
+    async function handleScrapeUrl() {
       const input = document.getElementById('url-input');
       const url = input.value.trim();
       if (!url) return;
 
-      logTelemetry(`🚀 Autopilot fetching URL: ${url}...`, 'accent');
-      setStage(1);
-
-      try {
-        const resp = await fetch('/api/scrape-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: url })
-        });
-        const data = await resp.json();
-        if (data.shows && data.shows.length > 0) {
-          const added = mergeShows(data.shows);
-          logTelemetry(`📡 Ingested ${data.shows.length} shows from remote URL (+${added} new). Total library: ${parsedShows.length}`, 'success');
-          renderParsedShows();
-          if (autopilot) {
-            autoDrivePipeline();
-          }
-        } else {
-          logTelemetry(`Warning: No podcast titles found at URL.`, 'warning');
-        }
-      } catch (err) {
-        logTelemetry(`Error fetching URL: ${err}`, 'warning');
+      const resp = await fetch('/api/scrape-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await resp.json();
+      if (data.shows) {
+        mergeIncomingShows(data.shows);
       }
     }
 
-    // Deduplicating merge helper
-    function mergeShows(newShows) {
-      const seen = new Set(parsedShows.map(s => s.title.toLowerCase().trim()));
-      let added = 0;
-      newShows.forEach(s => {
-        const key = s.title.toLowerCase().trim();
-        if (!seen.has(key)) {
-          seen.add(key);
-          parsedShows.push(s);
-          added++;
-        }
-      });
-      return added;
-    }
-
-    // Drag and drop handler
-    const dropZone = document.getElementById('drop-zone');
+    // Drop Target & File Handling
+    const dropTarget = document.getElementById('drop-target');
     const fileInput = document.getElementById('file-input');
 
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
+    dropTarget.addEventListener('click', () => fileInput.click());
+    dropTarget.addEventListener('dragover', (e) => { e.preventDefault(); dropTarget.classList.add('dragover'); });
+    dropTarget.addEventListener('dragleave', () => dropTarget.classList.remove('dragover'));
+    dropTarget.addEventListener('drop', (e) => {
       e.preventDefault();
-      dropZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+      dropTarget.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) handleFileList(e.dataTransfer.files);
     });
-
     fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) handleFiles(fileInput.files);
+      if (fileInput.files.length > 0) handleFileList(fileInput.files);
     });
 
-    async function handleFiles(fileList) {
-      const files = Array.from(fileList);
-      setStage(1);
-
-      for (const file of files) {
-        logTelemetry(`📁 Ingesting file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`, 'accent');
+    async function handleFileList(fileList) {
+      for (const file of Array.from(fileList)) {
         const content = await file.text();
-
         if (currentPlatform === 'clean' || file.name.endsWith('.opml') || content.includes('<opml')) {
           handleCleanOpml(content);
           return;
@@ -1027,282 +953,291 @@
         const resp = await fetch('/api/parse', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: content, platform: currentPlatform })
+          body: JSON.stringify({ content, platform: currentPlatform })
         });
         const data = await resp.json();
-        const added = mergeShows(data.shows);
-        logTelemetry(`✨ Ingested ${data.shows.length} shows from ${file.name} (+${added} new unique). Total library: ${parsedShows.length}`, 'success');
-      }
-
-      renderParsedShows();
-      if (autopilot && parsedShows.length > 0) {
-        autoDrivePipeline();
+        if (data.shows) mergeIncomingShows(data.shows);
       }
     }
 
-    // Self-driving Pipeline
-    async function autoDrivePipeline() {
-      setStage(2);
-      logTelemetry(`⚡ Autopilot: Querying Apple Podcasts Directory API for canonical RSS feeds...`, 'accent');
+    function mergeIncomingShows(incoming) {
+      const seen = new Set(libraryShows.map(s => s.title.toLowerCase().trim()));
+      let added = false;
+      incoming.forEach(s => {
+        const k = s.title.toLowerCase().trim();
+        if (!seen.has(k)) {
+          seen.add(k);
+          libraryShows.push(s);
+          added = true;
+        }
+      });
+
+      if (added || libraryShows.length > 0) {
+        document.getElementById('library-panel').style.display = 'block';
+        updateLibraryUI();
+        resolveLibraryFeeds();
+      }
+    }
+
+    async function resolveLibraryFeeds() {
+      const unverified = libraryShows.filter(s => !resolvedMap.has(s.title.toLowerCase().trim()));
+      if (unverified.length === 0) return;
 
       const resp = await fetch('/api/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shows: parsedShows, verify_feeds: true })
+        body: JSON.stringify({ shows: unverified, verify_feeds: true })
       });
       const data = await resp.json();
-      resolvedResults = data.results;
-
-      setStage(3);
-      logTelemetry(`🔍 Autopilot: Feed inspection & redirect checks completed.`, 'accent');
-
-      renderResolvedResults();
-
-      const resolvedCount = resolvedResults.filter(r => r.status === 'Resolved').length;
-      logTelemetry(`✅ Successfully resolved ${resolvedCount}/${resolvedResults.length} subscriptions.`, 'success');
-
-      setStage(4);
-      if (autopilot && resolvedCount > 0) {
-        logTelemetry(`🚀 Autopilot auto-exporting podcasts_rescue.opml...`, 'success');
-        exportOpmlFile();
+      if (data.results) {
+        data.results.forEach(r => {
+          resolvedMap.set(r.original_title.toLowerCase().trim(), r);
+        });
+        updateLibraryUI();
       }
     }
 
-    // Handle OPML cleaning
-    async function handleCleanOpml(content) {
-      logTelemetry(`🩺 Running OPML Health Cleaner on input...`, 'accent');
-      setStage(2);
-      const resp = await fetch('/api/clean/opml', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ opml_content: content })
-      });
-      const data = await resp.json();
-
-      logTelemetry(`Active: ${data.alive_count} | Relocated Fixed: ${data.moved_count} | Dead: ${data.dead_count}`, 'success');
-
-      resolvedResults = data.items.map(item => ({
-        status: item.is_alive ? 'Resolved' : 'NotFound',
-        original_title: item.title,
-        original_author: 'Existing OPML',
-        feed_url: item.current_feed_url,
-        matched_title: item.title,
-        artist: item.was_moved ? 'Relocated URL' : 'Active Feed',
-        candidates: [],
-        reason: item.error || 'Alive',
-        was_moved: item.was_moved
-      }));
-
-      setStage(4);
-      renderResolvedResults();
-      if (autopilot) {
-        downloadBlob(data.cleaned_opml, 'cleaned_podcasts.opml', 'text/xml');
-        logTelemetry(`🎉 Cleaned OPML auto-downloaded!`, 'success');
-      }
-    }
-
-    function renderParsedShows() {
-      document.getElementById('resolution-card').style.display = 'block';
-      document.getElementById('summary-header').textContent = `Subscribed Podcasts (${parsedShows.length} Shows Found)`;
-
-      const tbody = document.getElementById('results-body');
+    function updateLibraryUI() {
+      const tbody = document.getElementById('library-tbody');
       tbody.replaceChildren();
+      document.getElementById('total-badge').textContent = `${libraryShows.length} shows`;
 
-      parsedShows.forEach(s => {
+      const filterVal = document.getElementById('filter-input').value.toLowerCase().trim();
+
+      libraryShows.forEach((show, idx) => {
+        const key = show.title.toLowerCase().trim();
+        const r = resolvedMap.get(key);
+
+        const showTitle = show.title;
+        const author = (r && (r.original_author || r.artist)) || show.author || 'Unknown';
+
+        if (filterVal && !showTitle.toLowerCase().includes(filterVal) && !author.toLowerCase().includes(filterVal)) {
+          return;
+        }
+
         const tr = document.createElement('tr');
 
+        // Num
+        const tdNum = document.createElement('td');
+        tdNum.className = 'col-num';
+        tdNum.textContent = String(idx + 1).padStart(2, '0');
+
+        // Title
         const tdTitle = document.createElement('td');
-        const strong = document.createElement('strong');
-        strong.textContent = s.title;
-        tdTitle.appendChild(strong);
+        const showCell = document.createElement('div');
+        showCell.className = 'show-cell';
+        const avatar = document.createElement('div');
+        avatar.className = 'show-avatar';
+        avatar.textContent = showTitle.slice(0, 1).toUpperCase();
+        const nameEl = document.createElement('div');
+        nameEl.className = 'show-name';
+        nameEl.textContent = showTitle;
+        showCell.append(avatar, nameEl);
+        tdTitle.appendChild(showCell);
 
+        // Publisher
         const tdAuthor = document.createElement('td');
-        tdAuthor.textContent = s.author || 'Unknown';
+        tdAuthor.className = 'show-author';
+        tdAuthor.textContent = author;
 
+        // Status
         const tdStatus = document.createElement('td');
-        const badge = document.createElement('span');
-        badge.className = 'status-badge';
-        badge.style.background = 'rgba(255, 255, 255, 0.08)';
-        badge.style.color = '#94a3b8';
-        badge.textContent = 'Resolving...';
-        tdStatus.appendChild(badge);
-
-        const tdFeed = document.createElement('td');
-        tdFeed.style.color = '#64748b';
-        tdFeed.textContent = 'Pending directory lookup';
-
-        tr.append(tdTitle, tdAuthor, tdStatus, tdFeed);
-        tbody.appendChild(tr);
-      });
-    }
-
-    function renderResolvedResults() {
-      const tbody = document.getElementById('results-body');
-      tbody.replaceChildren();
-
-      resolvedResults.forEach((r, idx) => {
-        const tr = document.createElement('tr');
-
-        const tdTitle = document.createElement('td');
-        const strong = document.createElement('strong');
-        strong.textContent = r.original_title;
-        tdTitle.appendChild(strong);
-
-        const tdAuthor = document.createElement('td');
-        tdAuthor.textContent = r.original_author || r.artist || 'Unknown';
-
-        const tdStatus = document.createElement('td');
-        const badge = document.createElement('span');
+        const pill = document.createElement('span');
+        const dot = document.createElement('span');
+        dot.className = 'pill-dot';
 
         const tdFeed = document.createElement('td');
 
-        if (r.status === 'Resolved') {
-          badge.className = r.original_author === 'Custom / Private' ? 'status-badge status-custom' : 'status-badge status-resolved';
-          badge.textContent = r.was_moved ? 'Moved / Fixed' : (r.original_author === 'Custom / Private' ? 'Private Feed' : 'Resolved');
+        if (!r) {
+          pill.className = 'pill';
+          pill.style.background = 'var(--surface-3)';
+          pill.style.color = 'var(--text-subtle)';
+          pill.textContent = 'Resolving...';
+          tdFeed.textContent = '—';
+          tdFeed.style.color = 'var(--text-subtle)';
+        } else if (r.status === 'Resolved') {
+          pill.className = r.was_moved ? 'pill pill-moved' : (r.original_author === 'Custom' ? 'pill pill-custom' : 'pill pill-resolved');
+          pill.append(dot, document.createTextNode(r.was_moved ? 'Redirected 301' : (r.original_author === 'Custom' ? 'Custom' : 'Canonical')));
 
           const link = document.createElement('a');
+          link.className = 'feed-link';
           link.href = r.feed_url;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
-          link.style.color = '#10b981';
-          link.style.textDecoration = 'none';
-          link.style.fontSize = '0.8rem';
           link.textContent = r.feed_url;
           tdFeed.appendChild(link);
         } else if (r.status === 'Ambiguous') {
-          badge.className = 'status-badge status-ambiguous';
-          badge.textContent = 'Ambiguous';
+          pill.className = 'pill pill-ambiguous';
+          pill.append(dot, document.createTextNode('Ambiguous'));
 
-          const btn = document.createElement('button');
-          btn.className = 'btn btn-secondary';
-          btn.style.padding = '0.2rem 0.5rem';
-          btn.style.fontSize = '0.75rem';
-          btn.textContent = `Choose Match (${r.candidates.length})`;
-          btn.onclick = () => showDisambiguation(idx);
-          tdFeed.appendChild(btn);
+          const selectBtn = document.createElement('button');
+          selectBtn.className = 'btn btn-secondary';
+          selectBtn.style.height = '24px';
+          selectBtn.style.padding = '0 8px';
+          selectBtn.style.fontSize = '11px';
+          selectBtn.textContent = `Select Feed (${r.candidates.length})`;
+          selectBtn.onclick = () => showCandidatePicker(key, r);
+          tdFeed.appendChild(selectBtn);
         } else {
-          badge.className = 'status-badge status-notfound';
-          badge.textContent = 'Not Found';
-
-          const err = document.createElement('span');
-          err.style.color = '#ef4444';
-          err.style.fontSize = '0.8rem';
-          err.textContent = r.reason;
-          tdFeed.appendChild(err);
+          pill.className = 'pill pill-notfound';
+          pill.append(dot, document.createTextNode('Unresolved'));
+          tdFeed.textContent = r.reason || 'Not in directory';
+          tdFeed.style.color = 'var(--text-subtle)';
         }
 
-        tdStatus.appendChild(badge);
-        tr.append(tdTitle, tdAuthor, tdStatus, tdFeed);
+        tdStatus.appendChild(pill);
+        tr.append(tdNum, tdTitle, tdAuthor, tdStatus, tdFeed);
         tbody.appendChild(tr);
       });
-
-      document.getElementById('resolution-card').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function showDisambiguation(idx) {
-      const r = resolvedResults[idx];
-      const section = document.getElementById('ambiguity-section');
-      section.style.display = 'block';
-      document.getElementById('ambiguity-desc').textContent = `Multiple candidate feeds found for "${r.original_title}". Select correct feed:`;
+    function showCandidatePicker(key, resolveObj) {
+      const banner = document.getElementById('ambiguity-banner');
+      const list = document.getElementById('candidate-list');
+      list.replaceChildren();
 
-      const grid = document.getElementById('candidate-grid');
-      grid.replaceChildren();
-
-      r.candidates.forEach(c => {
-        const card = document.createElement('div');
-        card.style.background = 'rgba(15, 21, 35, 0.8)';
-        card.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-        card.style.borderRadius = '0.5rem';
-        card.style.padding = '0.75rem';
-        card.style.cursor = 'pointer';
-        card.onclick = () => {
-          resolvedResults[idx].status = 'Resolved';
-          resolvedResults[idx].matched_title = c.collection_name;
-          resolvedResults[idx].feed_url = c.feed_url;
-          resolvedResults[idx].artist = c.artist_name;
-          section.style.display = 'none';
-          renderResolvedResults();
+      resolveObj.candidates.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'candidate-card-btn';
+        btn.onclick = () => {
+          resolveObj.status = 'Resolved';
+          resolveObj.matched_title = c.collection_name;
+          resolveObj.feed_url = c.feed_url;
+          resolveObj.artist = c.artist_name;
+          resolvedMap.set(key, resolveObj);
+          banner.style.display = 'none';
+          updateLibraryUI();
         };
 
         const name = document.createElement('div');
-        name.style.fontWeight = '700';
-        name.style.fontSize = '0.9rem';
-        name.textContent = c.collection_name;
+        name.style.fontWeight = '600';
+        name.style.color = '#fff';
+        name.textContent = `${c.collection_name} by ${c.artist_name}`;
 
-        const artist = document.createElement('div');
-        artist.style.fontSize = '0.8rem';
-        artist.style.color = 'var(--text-muted)';
-        artist.textContent = `by ${c.artist_name}`;
+        const url = document.createElement('div');
+        url.style.fontSize = '11px';
+        url.style.color = 'var(--text-subtle)';
+        url.style.fontFamily = 'monospace';
+        url.textContent = c.feed_url;
 
-        card.append(name, artist);
-        grid.appendChild(card);
+        btn.append(name, url);
+        list.appendChild(btn);
       });
 
-      section.scrollIntoView({ behavior: 'smooth' });
+      banner.style.display = 'block';
+      banner.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function addCustomFeed() {
-      const title = document.getElementById('custom-feed-title').value.trim();
-      const url = document.getElementById('custom-feed-url').value.trim();
+    function filterTable() {
+      updateLibraryUI();
+    }
+
+    function submitCustomFeed() {
+      const title = document.getElementById('custom-title-input').value.trim();
+      const url = document.getElementById('custom-url-input').value.trim();
       if (!title || !url) return;
 
-      resolvedResults.push({
+      const customObj = {
         status: 'Resolved',
         original_title: title,
-        original_author: 'Custom / Private',
+        original_author: 'Custom',
         feed_url: url,
         matched_title: title,
-        artist: 'Private Feed',
+        artist: 'Custom Feed',
         candidates: [],
-        reason: 'Manually added custom feed',
+        reason: 'Custom user addition',
         was_moved: false
+      };
+
+      libraryShows.push({ title, author: 'Custom', source: 'Custom' });
+      resolvedMap.set(title.toLowerCase().trim(), customObj);
+
+      document.getElementById('custom-title-input').value = '';
+      document.getElementById('custom-url-input').value = '';
+      closeModal('custom-feed-modal');
+
+      document.getElementById('library-panel').style.display = 'block';
+      updateLibraryUI();
+    }
+
+    async function handleCleanOpml(opmlContent) {
+      const resp = await fetch('/api/clean/opml', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ opml_content: opmlContent })
+      });
+      const data = await resp.json();
+
+      libraryShows = [];
+      resolvedMap.clear();
+
+      data.items.forEach(item => {
+        libraryShows.push({ title: item.title, author: 'OPML Feed', source: 'OPML Cleaner' });
+        resolvedMap.set(item.title.toLowerCase().trim(), {
+          status: item.is_alive ? 'Resolved' : 'NotFound',
+          original_title: item.title,
+          original_author: 'OPML Feed',
+          feed_url: item.current_feed_url,
+          matched_title: item.title,
+          artist: item.was_moved ? 'Redirected' : 'Active',
+          candidates: [],
+          reason: item.error || 'Verified',
+          was_moved: item.was_moved
+        });
       });
 
-      closeCustomFeedModal();
-      document.getElementById('resolution-card').style.display = 'block';
-      renderResolvedResults();
-      logTelemetry(`🔒 Added custom feed: "${title}"`, 'accent');
+      document.getElementById('library-panel').style.display = 'block';
+      updateLibraryUI();
     }
 
-    // Modal helpers
-    function openImportGuide() { document.getElementById('import-guide-modal').style.display = 'flex'; }
-    function closeImportGuide() { document.getElementById('import-guide-modal').style.display = 'none'; }
-    function openCustomFeedModal() { document.getElementById('custom-feed-modal').style.display = 'flex'; }
-    function closeCustomFeedModal() { document.getElementById('custom-feed-modal').style.display = 'none'; }
+    async function exportFile(format) {
+      const exportItems = [];
+      libraryShows.forEach(s => {
+        const r = resolvedMap.get(s.title.toLowerCase().trim());
+        if (r && r.status === 'Resolved' && r.feed_url) {
+          exportItems.push({ title: r.matched_title || s.title, feed_url: r.feed_url });
+        }
+      });
 
-    // Export triggers
-    async function exportOpmlFile() {
-      const items = resolvedResults.filter(r => r.status === 'Resolved' && r.feed_url).map(r => ({ title: r.matched_title || r.original_title, feed_url: r.feed_url }));
-      const resp = await fetch('/api/export/opml', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ items: items }) });
-      const xml = await resp.text();
-      downloadBlob(xml, 'podcasts_rescue.opml', 'text/xml');
-    }
+      if (exportItems.length === 0) {
+        alert('No resolved feeds to export.');
+        return;
+      }
 
-    async function exportJsonFile() {
-      const items = resolvedResults.filter(r => r.status === 'Resolved' && r.feed_url).map(r => ({ title: r.matched_title || r.original_title, feed_url: r.feed_url }));
-      const resp = await fetch('/api/export/json', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ items: items }) });
-      const json = await resp.text();
-      downloadBlob(json, 'podcasts_rescue.json', 'application/json');
-    }
+      let endpoint = '/api/export/opml';
+      let mime = 'text/xml';
+      let filename = 'podcasts_rescue.opml';
 
-    async function exportCsvFile() {
-      const items = resolvedResults.filter(r => r.status === 'Resolved' && r.feed_url).map(r => ({ title: r.matched_title || r.original_title, feed_url: r.feed_url }));
-      const resp = await fetch('/api/export/csv', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ items: items }) });
-      const csv = await resp.text();
-      downloadBlob(csv, 'podcasts_rescue.csv', 'text/csv');
-    }
+      if (format === 'json') {
+        endpoint = '/api/export/json';
+        mime = 'application/json';
+        filename = 'podcasts_rescue.json';
+      } else if (format === 'csv') {
+        endpoint = '/api/export/csv';
+        mime = 'text/csv';
+        filename = 'podcasts_rescue.csv';
+      }
 
-    function downloadBlob(content, filename, mimeType) {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: exportItems })
+      });
+      const content = await resp.text();
+
+      const blob = new Blob([content], { type: mime });
+      const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = dlUrl;
       a.download = filename;
       a.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(dlUrl);
     }
 
-    // Initialize bookmarklet on load
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // Init
     setupBookmarklet('podbean');
 
     // Auto-poll listener for bookmarklet ingestion
@@ -1312,10 +1247,7 @@
         if (resp.ok) {
           const data = await resp.json();
           if (data.shows && data.shows.length > 0) {
-            const added = mergeShows(data.shows);
-            logTelemetry(`📡 Auto-detected ${data.shows.length} shows via browser bridge (+${added} new). Total library: ${parsedShows.length}`, 'success');
-            renderParsedShows();
-            if (autopilot) autoDrivePipeline();
+            mergeIncomingShows(data.shows);
           }
         }
       } catch (e) {}

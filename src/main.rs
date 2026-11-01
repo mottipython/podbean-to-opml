@@ -12,8 +12,8 @@ use std::path::Path;
 
 fn print_banner() {
     println!("=================================================================");
-    println!(" 🎙️  Universal Podcast Subscription Rescue & OPML Exporter");
-    println!("    Works across Podbean, Spotify, Apple Podcasts & YouTube Music");
+    println!(" Podcast Rescue - Universal Subscriptions & OPML Exporter");
+    println!(" Works across Podbean, Spotify, Apple Podcasts & YouTube Music");
     println!("=================================================================");
 }
 
@@ -32,11 +32,17 @@ fn print_help() {
     println!("  podcast-rescue <file.har> -o my.csv            Export to CSV spreadsheet");
     println!("  podcast-rescue --verify-feeds   Pings and verifies resolved RSS feeds");
     println!("  podcast-rescue --clean-opml <old.opml> [-o clean.opml]   Validates & fixes existing OPML");
+    println!("  podcast-rescue --version        Show version information");
     println!("  podcast-rescue --help           Show this help message\n");
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
+
+    if args.iter().any(|a| a == "-v" || a == "--version") {
+        println!("podcast-rescue {}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
 
     if args.iter().any(|a| a == "-h" || a == "--help") {
         print_help();
