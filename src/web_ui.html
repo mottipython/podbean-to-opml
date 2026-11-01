@@ -634,9 +634,9 @@
       <!-- Method C: Instant Drop Zone -->
       <div class="drop-zone" id="drop-zone">
         <div class="drop-icon">📥</div>
-        <div class="drop-text" id="drop-text">Or drop any .har, .json, .opml, or text file here</div>
-        <div class="drop-sub">Autopilot instantly captures, resolves, and exports with zero manual clicks</div>
-        <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.opml,.xml">
+        <div class="drop-text" id="drop-text">Or drop any .har, .json, .opml, or text file here (multi-file supported)</div>
+        <div class="drop-sub">Drop one or more page exports — Autopilot merges and deduplicates all shows automatically</div>
+        <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.opml,.xml" multiple>
       </div>
 
       <!-- Mission Control Telemetry HUD -->
@@ -759,8 +759,8 @@
 
     const platformConfig = {
       podbean: {
-        title: "Podbean Auto-Extractor",
-        desc: "Drag the button to your Bookmarks bar, open Podbean Followed Shows, and click it to auto-extract!",
+        title: "Podbean Multi-Page Auto-Extractor",
+        desc: "Podbean splits subscriptions into 36 shows per page (76 shows = 3 pages). Drag this button to your Bookmarks bar, open Podbean Following, and click it — it automatically crawls and captures all pages!",
         url: "https://www.podbean.com"
       },
       spotify: {
@@ -854,47 +854,93 @@
       if (url) window.open(url, '_blank');
     }
 
-    // Build the dynamic 1-click Bookmarklet script
+    // Build the dynamic 1-click Bookmarklet script with multi-page crawling
     function setupBookmarklet(platform) {
-      const script = `javascript:(function(){
+      const script = `javascript:(async function(){
         try {
+          var overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999999;background:#0f172a;color:#fff;padding:16px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6);font-family:system-ui,sans-serif;font-size:14px;border:1px solid #10b981;max-width:340px;';
+          var titleDiv = document.createElement('div');
+          titleDiv.style.cssText = 'font-weight:700;color:#10b981;margin-bottom:6px;font-size:15px;display:flex;align-items:center;gap:6px;';
+          titleDiv.textContent = '🎙️ Podcast Rescue Auto-Crawler';
+          var statusEl = document.createElement('div');
+          statusEl.textContent = 'Extracting library...';
+          overlay.append(titleDiv, statusEl);
+          document.body.appendChild(overlay);
+
           var shows = [];
           var seen = {};
-          var titles = document.querySelectorAll('a, h2, h3, span, div');
-          titles.forEach(function(el){
-            var text = el.innerText ? el.innerText.trim() : '';
-            var href = el.getAttribute('href') || '';
-            if (href.indexOf('podcast') !== -1 || href.indexOf('show') !== -1) {
-              if (text.length > 2 && text.length < 90 && !seen[text] && text.indexOf('\\n') === -1) {
-                seen[text] = true;
-                shows.push({ title: text, author: null, source: '${platform}' });
-              }
-            }
-          });
-          if (shows.length === 0) {
-            document.querySelectorAll('img[alt]').forEach(function(img){
-              var alt = img.getAttribute('alt');
-              if (alt && alt.length > 2 && !seen[alt]) {
-                seen[alt] = true;
-                shows.push({ title: alt, author: null, source: '${platform}' });
+
+          function extractFromDoc(doc, src) {
+            var found = 0;
+            var elements = doc.querySelectorAll('a, [data-dir-podcast-title], .card-title, h3, h2');
+            elements.forEach(function(el){
+              var title = el.getAttribute('data-dir-podcast-title') || el.innerText || '';
+              title = title.trim();
+              var author = el.getAttribute('data-dir-author') || null;
+              var href = el.getAttribute('href') || '';
+              if (title.length > 2 && title.length < 100 && title.indexOf('\\n') === -1) {
+                var key = title.toLowerCase();
+                if (!seen[key] && (href.indexOf('podcast') !== -1 || href.indexOf('show') !== -1 || el.hasAttribute('data-dir-podcast-title'))) {
+                  seen[key] = true;
+                  shows.push({ title: title, author: author, source: src });
+                  found++;
+                }
               }
             });
+            return found;
           }
-          if (shows.length === 0) {
-            alert('No podcast shows found on this view. Ensure your library is visible.');
-            return;
+
+          // 1. Initial page extraction
+          extractFromDoc(document, '${platform}');
+          statusEl.textContent = 'Page 1: ' + shows.length + ' shows found.';
+
+          // 2. Podbean Multi-Page Pagination Crawler
+          if (window.location.hostname.indexOf('podbean.com') !== -1) {
+            var page = 2;
+            var maxPages = 20;
+            while (page <= maxPages) {
+              statusEl.textContent = 'Crawling Page ' + page + '... (' + shows.length + ' shows so far)';
+              var sep = window.location.href.indexOf('?') !== -1 ? '&' : '?';
+              var pageUrl = window.location.href.replace(/([?&])page=\\d+/, '') + sep + 'page=' + page;
+              try {
+                var resp = await fetch(pageUrl, { credentials: 'include' });
+                if (!resp.ok) break;
+                var htmlText = await resp.text();
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(htmlText, 'text/html');
+                var newCount = extractFromDoc(doc, '${platform}');
+                if (newCount === 0) break;
+                page++;
+              } catch(e) {
+                break;
+              }
+            }
           }
-          fetch('http://127.0.0.1:3000/api/auto-ingest', {
+
+          // 3. Spotify Infinite-Scroll Loader
+          if (window.location.hostname.indexOf('spotify.com') !== -1) {
+            for (var s = 0; s < 10; s++) {
+              window.scrollTo(0, document.body.scrollHeight);
+              await new Promise(function(r){ setTimeout(r, 400); });
+              extractFromDoc(document, '${platform}');
+              statusEl.textContent = 'Scrolling Spotify: ' + shows.length + ' shows loaded...';
+            }
+          }
+
+          statusEl.textContent = '✨ Total: ' + shows.length + ' shows found! Sending to Podcast Rescue...';
+
+          // 4. Send aggregated library to local server
+          var res = await fetch('http://127.0.0.1:3000/api/auto-ingest', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ shows: shows, source: '${platform}' })
-          }).then(function(r){ return r.json(); }).then(function(d){
-            alert('🚀 Successfully sent ' + d.count + ' podcast subscriptions to Podcast Rescue!');
-          }).catch(function(err){
-            alert('Could not reach Podcast Rescue on 127.0.0.1:3000. Is the app running?');
+            body: JSON.stringify({ shows: shows, source: '${platform} Auto-Crawler' })
           });
-        } catch(e) {
-          alert('Error: ' + e);
+          var data = await res.json();
+          statusEl.textContent = '✅ Rescued ' + data.count + ' shows! Switch back to your Podcast Rescue tab.';
+          setTimeout(function(){ overlay.remove(); }, 4000);
+        } catch(err) {
+          alert('Podcast Rescue error: ' + err);
         }
       })();`;
 
@@ -919,8 +965,8 @@
         });
         const data = await resp.json();
         if (data.shows && data.shows.length > 0) {
-          parsedShows = data.shows;
-          logTelemetry(`📡 Ingested ${data.shows.length} shows from remote URL.`, 'success');
+          const added = mergeShows(data.shows);
+          logTelemetry(`📡 Ingested ${data.shows.length} shows from remote URL (+${added} new). Total library: ${parsedShows.length}`, 'success');
           renderParsedShows();
           if (autopilot) {
             autoDrivePipeline();
@@ -933,6 +979,21 @@
       }
     }
 
+    // Deduplicating merge helper
+    function mergeShows(newShows) {
+      const seen = new Set(parsedShows.map(s => s.title.toLowerCase().trim()));
+      let added = 0;
+      newShows.forEach(s => {
+        const key = s.title.toLowerCase().trim();
+        if (!seen.has(key)) {
+          seen.add(key);
+          parsedShows.push(s);
+          added++;
+        }
+      });
+      return added;
+    }
+
     // Drag and drop handler
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -943,37 +1004,40 @@
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
     });
 
     fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
+      if (fileInput.files.length > 0) handleFiles(fileInput.files);
     });
 
-    function handleFile(file) {
-      logTelemetry(`📁 Ingesting file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`, 'accent');
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const content = e.target.result;
+    async function handleFiles(fileList) {
+      const files = Array.from(fileList);
+      setStage(1);
+
+      for (const file of files) {
+        logTelemetry(`📁 Ingesting file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`, 'accent');
+        const content = await file.text();
+
         if (currentPlatform === 'clean' || file.name.endsWith('.opml') || content.includes('<opml')) {
           handleCleanOpml(content);
-        } else {
-          setStage(1);
-          const resp = await fetch('/api/parse', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: content, platform: currentPlatform })
-          });
-          const data = await resp.json();
-          parsedShows = data.shows;
-          logTelemetry(`✨ Extracted ${data.shows.length} unique shows from archive.`, 'success');
-          renderParsedShows();
-          if (autopilot) {
-            autoDrivePipeline();
-          }
+          return;
         }
-      };
-      reader.readAsText(file);
+
+        const resp = await fetch('/api/parse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: content, platform: currentPlatform })
+        });
+        const data = await resp.json();
+        const added = mergeShows(data.shows);
+        logTelemetry(`✨ Ingested ${data.shows.length} shows from ${file.name} (+${added} new unique). Total library: ${parsedShows.length}`, 'success');
+      }
+
+      renderParsedShows();
+      if (autopilot && parsedShows.length > 0) {
+        autoDrivePipeline();
+      }
     }
 
     // Self-driving Pipeline
@@ -1248,8 +1312,8 @@
         if (resp.ok) {
           const data = await resp.json();
           if (data.shows && data.shows.length > 0) {
-            parsedShows = data.shows;
-            logTelemetry(`📡 Auto-detected ${data.shows.length} shows via browser bridge!`, 'success');
+            const added = mergeShows(data.shows);
+            logTelemetry(`📡 Auto-detected ${data.shows.length} shows via browser bridge (+${added} new). Total library: ${parsedShows.length}`, 'success');
             renderParsedShows();
             if (autopilot) autoDrivePipeline();
           }

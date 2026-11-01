@@ -251,6 +251,46 @@ pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
 
     let mut shows = parse_content(&body, None);
 
+    // Auto-paginate Podbean profile / user URLs to capture all pages (36 shows per page)
+    let is_podbean_profile = clean_url.contains("podbean.com")
+        && (clean_url.contains("/user") || clean_url.contains("/following"));
+
+    if is_podbean_profile && !clean_url.contains("page=") {
+        let mut all_shows = shows;
+        let mut seen = std::collections::HashSet::new();
+        for s in &all_shows {
+            seen.insert(s.title.to_lowercase());
+        }
+
+        // Crawl up to 15 pages of pagination
+        for p in 2..=15 {
+            let separator = if clean_url.contains('?') { '&' } else { '?' };
+            let page_url = format!("{}{}page={}", clean_url, separator, p);
+            if let Ok(page_resp) = agent.get(&page_url).call() {
+                if let Ok(page_body) = page_resp.into_string() {
+                    let page_shows = parse_content(&page_body, Some("Podbean"));
+                    let mut new_in_page = 0;
+                    for show in page_shows {
+                        let key = show.title.to_lowercase();
+                        if !seen.contains(&key) {
+                            seen.insert(key);
+                            all_shows.push(show);
+                            new_in_page += 1;
+                        }
+                    }
+                    if new_in_page == 0 {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return Ok(all_shows);
+    }
+
     // If generic parser found nothing, try extracting <meta property="og:title"> or <title>
     if shows.is_empty() {
         let re_og_title = Regex::new(r#"<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']"#).unwrap();
