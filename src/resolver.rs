@@ -7,8 +7,10 @@ use std::time::Duration;
 
 /// Normalizes title string by stripping punctuation and redundant whitespace
 pub fn normalize_title(title: &str) -> String {
-    let re = Regex::new(r"[^\w\s]").unwrap();
-    let cleaned = re.replace_all(title, " ");
+    let cleaned: String = title
+        .chars()
+        .map(|c| if c.is_alphanumeric() || c.is_whitespace() { c } else { ' ' })
+        .collect();
     cleaned.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase()
 }
 
@@ -23,9 +25,14 @@ pub fn authors_match(author_a: &str, author_b: &str) -> bool {
         return true;
     }
 
-    let re_punct = Regex::new(r"[^\w\s]").unwrap();
-    let clean_a = re_punct.replace_all(&a, " ").to_string();
-    let clean_b = re_punct.replace_all(&b, " ").to_string();
+    let clean_a: String = a
+        .chars()
+        .map(|c| if c.is_alphanumeric() || c.is_whitespace() { c } else { ' ' })
+        .collect();
+    let clean_b: String = b
+        .chars()
+        .map(|c| if c.is_alphanumeric() || c.is_whitespace() { c } else { ' ' })
+        .collect();
 
     let clean_a_trim = clean_a.split_whitespace().collect::<Vec<_>>().join(" ");
     let clean_b_trim = clean_b.split_whitespace().collect::<Vec<_>>().join(" ");

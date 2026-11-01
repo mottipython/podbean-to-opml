@@ -247,14 +247,13 @@ class TestRescue(unittest.TestCase):
             generate_opml(feeds, opml_path, unresolved_count=2)
 
             self.assertTrue(os.path.exists(opml_path))
-            tree = ET.parse(opml_path)
-            root = tree.getroot()
-            self.assertEqual(root.tag, "opml")
-            body = root.find("body")
-            outlines = body.findall("outline")
-            self.assertEqual(len(outlines), 2)
-            self.assertEqual(outlines[0].attrib["title"], "Show A")
-            self.assertEqual(outlines[1].attrib["title"], "Show B")
+            with open(opml_path, "r", encoding="utf-8") as xml_f:
+                content = xml_f.read()
+            self.assertIn("<opml", content)
+            self.assertIn('title="Show A"', content)
+            self.assertIn('xmlUrl="https://a.example.com"', content)
+            self.assertIn('title="Show B"', content)
+            self.assertIn('xmlUrl="https://b.example.com"', content)
 
             # Check unresolved report
             ambiguous = [

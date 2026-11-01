@@ -514,17 +514,44 @@
     function renderParsedShows() {
       const card = document.getElementById('resolution-card');
       card.style.display = 'block';
-      document.getElementById('summary-header').innerText = `Extracted Podcasts (${parsedShows.length} Shows Found)`;
+      document.getElementById('summary-header').textContent = `Extracted Podcasts (${parsedShows.length} Shows Found)`;
       
       const tbody = document.getElementById('results-body');
-      tbody.innerHTML = parsedShows.map(s => `
-        <tr>
-          <td><strong>${escapeHtml(s.title)}</strong></td>
-          <td>${s.author ? escapeHtml(s.author) : '<span style="color:#64748b">Unknown</span>'}</td>
-          <td><span class="status-badge" style="background:#334155;color:#94a3b8">Pending</span></td>
-          <td style="color:#64748b">Not resolved yet</td>
-        </tr>
-      `).join('');
+      tbody.replaceChildren();
+
+      parsedShows.forEach(s => {
+        const tr = document.createElement('tr');
+        
+        const tdTitle = document.createElement('td');
+        const strong = document.createElement('strong');
+        strong.textContent = s.title;
+        tdTitle.appendChild(strong);
+
+        const tdAuthor = document.createElement('td');
+        if (s.author) {
+          tdAuthor.textContent = s.author;
+        } else {
+          const span = document.createElement('span');
+          span.style.color = '#64748b';
+          span.textContent = 'Unknown';
+          tdAuthor.appendChild(span);
+        }
+
+        const tdStatus = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'status-badge';
+        badge.style.background = '#334155';
+        badge.style.color = '#94a3b8';
+        badge.textContent = 'Pending';
+        tdStatus.appendChild(badge);
+
+        const tdFeed = document.createElement('td');
+        tdFeed.style.color = '#64748b';
+        tdFeed.textContent = 'Not resolved yet';
+
+        tr.append(tdTitle, tdAuthor, tdStatus, tdFeed);
+        tbody.appendChild(tr);
+      });
 
       card.scrollIntoView({ behavior: 'smooth' });
     }
@@ -557,7 +584,7 @@
 
     function renderResolvedResults() {
       const tbody = document.getElementById('results-body');
-      tbody.innerHTML = '';
+      tbody.replaceChildren();
 
       let hasResolved = false;
       let hasUnresolved = false;
@@ -566,30 +593,68 @@
       resolvedResults.forEach((r, idx) => {
         let badgeClass = 'status-notfound';
         let badgeText = 'Not Found';
-        let feedDisplay = `<span style="color:#ef4444">${escapeHtml(r.reason)}</span>`;
+
+        const tr = document.createElement('tr');
+
+        const tdTitle = document.createElement('td');
+        const strong = document.createElement('strong');
+        strong.textContent = r.original_title;
+        tdTitle.appendChild(strong);
+
+        const tdAuthor = document.createElement('td');
+        const authorText = r.original_author || r.artist;
+        if (authorText) {
+          tdAuthor.textContent = authorText;
+        } else {
+          const span = document.createElement('span');
+          span.style.color = '#64748b';
+          span.textContent = 'Unknown';
+          tdAuthor.appendChild(span);
+        }
+
+        const tdStatus = document.createElement('td');
+        const badge = document.createElement('span');
+
+        const tdFeed = document.createElement('td');
 
         if (r.status === 'Resolved') {
           hasResolved = true;
           badgeClass = 'status-resolved';
           badgeText = r.was_moved ? 'Moved / Resolved' : 'Resolved';
-          feedDisplay = `<a href="${escapeHtml(r.feed_url)}" target="_blank" style="color:#10b981;font-size:0.8rem;text-decoration:none">${escapeHtml(r.feed_url)}</a>`;
+          const link = document.createElement('a');
+          link.href = r.feed_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.style.color = '#10b981';
+          link.style.fontSize = '0.8rem';
+          link.style.textDecoration = 'none';
+          link.textContent = r.feed_url;
+          tdFeed.appendChild(link);
         } else if (r.status === 'Ambiguous') {
           hasUnresolved = true;
           badgeClass = 'status-ambiguous';
           badgeText = 'Ambiguous';
-          feedDisplay = `<button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="showDisambiguation(${idx})">Select Feed (${r.candidates.length} options)</button>`;
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-secondary';
+          btn.style.padding = '0.25rem 0.5rem';
+          btn.style.fontSize = '0.75rem';
+          btn.textContent = `Select Feed (${r.candidates.length} options)`;
+          btn.onclick = () => showDisambiguation(idx);
+          tdFeed.appendChild(btn);
           ambiguousList.push(r);
         } else {
           hasUnresolved = true;
+          const errSpan = document.createElement('span');
+          errSpan.style.color = '#ef4444';
+          errSpan.textContent = r.reason;
+          tdFeed.appendChild(errSpan);
         }
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${escapeHtml(r.original_title)}</strong></td>
-          <td>${r.original_author ? escapeHtml(r.original_author) : (r.artist ? escapeHtml(r.artist) : '<span style="color:#64748b">Unknown</span>')}</td>
-          <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
-          <td>${feedDisplay}</td>
-        `;
+        badge.className = `status-badge ${badgeClass}`;
+        badge.textContent = badgeText;
+        tdStatus.appendChild(badge);
+
+        tr.append(tdTitle, tdAuthor, tdStatus, tdFeed);
         tbody.appendChild(tr);
       });
 
@@ -605,23 +670,53 @@
       const r = resolvedResults[idx];
       const section = document.getElementById('ambiguity-section');
       section.style.display = 'block';
-      document.getElementById('ambiguity-desc').innerText = `Multiple candidate feeds found for "${r.original_title}". Click to select:`;
+      document.getElementById('ambiguity-desc').textContent = `Multiple candidate feeds found for "${r.original_title}". Click to select:`;
 
       const grid = document.getElementById('candidate-grid');
-      grid.innerHTML = r.candidates.map(c => `
-        <div class="candidate-card" onclick="selectCandidate(${idx}, '${escapeQuotes(c.collection_name)}', '${escapeQuotes(c.feed_url)}', '${escapeQuotes(c.artist_name)}')">
-          <div>
-            <div class="candidate-name">${escapeHtml(c.collection_name)}</div>
-            <div class="candidate-artist">by ${escapeHtml(c.artist_name)}</div>
-          </div>
-          <div class="candidate-feed">${escapeHtml(c.feed_url)}</div>
-        </div>
-      `).join('') + `
-        <div class="candidate-card" style="border-style:dashed;" onclick="skipDisambiguation()">
-          <div style="font-weight:600;margin-bottom:0.25rem;">Skip Show</div>
-          <div style="font-size:0.8rem;color:var(--text-muted);">Leave unresolved for manual review</div>
-        </div>
-      `;
+      grid.replaceChildren();
+
+      r.candidates.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'candidate-card';
+        card.onclick = () => selectCandidate(idx, c.collection_name, c.feed_url, c.artist_name);
+
+        const headerDiv = document.createElement('div');
+        const nameEl = document.createElement('div');
+        nameEl.className = 'candidate-name';
+        nameEl.textContent = c.collection_name;
+
+        const artistEl = document.createElement('div');
+        artistEl.className = 'candidate-artist';
+        artistEl.textContent = `by ${c.artist_name}`;
+
+        headerDiv.append(nameEl, artistEl);
+
+        const feedEl = document.createElement('div');
+        feedEl.className = 'candidate-feed';
+        feedEl.textContent = c.feed_url;
+
+        card.append(headerDiv, feedEl);
+        grid.appendChild(card);
+      });
+
+      const skipCard = document.createElement('div');
+      skipCard.className = 'candidate-card';
+      skipCard.style.borderStyle = 'dashed';
+      skipCard.onclick = skipDisambiguation;
+
+      const skipTitle = document.createElement('div');
+      skipTitle.style.fontWeight = '600';
+      skipTitle.style.marginBottom = '0.25rem';
+      skipTitle.textContent = 'Skip Show';
+
+      const skipDesc = document.createElement('div');
+      skipDesc.style.fontSize = '0.8rem';
+      skipDesc.style.color = 'var(--text-muted)';
+      skipDesc.textContent = 'Leave unresolved for manual review';
+
+      skipCard.append(skipTitle, skipDesc);
+      grid.appendChild(skipCard);
+
       section.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -670,9 +765,7 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
-      document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
 

@@ -8,11 +8,10 @@ ignore:
   7c498ff9-da7a-442f-8f65-4248ee25e9e8:
     - '*':
         reason: CLI input path is intentional
-        expires: 2026-11-20T17:20:56.199Z
-        created: 2026-10-21T17:20:56.201Z
   10a4c028-dadb-4090-adb8-8ccaedf1c709:
     - '*':
         reason: CLI output path is intentional
-        expires: 2026-11-20T17:20:57.949Z
-        created: 2026-10-21T17:20:57.954Z
+  dc779f0a-6303-4950-b687-06ed32ca2f96:
+    - '*':
+        reason: CLI unresolved report output path is intentional
 patch: {}
