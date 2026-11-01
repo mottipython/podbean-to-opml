@@ -14,3 +14,6 @@ env/
 # Rust
 target/
 **/*.rs.bk
+
+dist/
+artifacts/

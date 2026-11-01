@@ -1,0 +1,78 @@
+name: Build Cross-Platform Binaries
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux (x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+      - name: Build
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+      - name: Package
+        run: |
+          mkdir -p artifacts
+          cp target/x86_64-unknown-linux-gnu/release/podcast-rescue artifacts/podcast-rescue-linux-x86_64
+          chmod +x artifacts/podcast-rescue-linux-x86_64
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: podcast-rescue-linux-x86_64
+          path: artifacts/podcast-rescue-linux-x86_64
+
+  build-windows:
+    name: Build Windows (x86_64 .exe)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - name: Build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          cp target/x86_64-pc-windows-msvc/release/podcast-rescue.exe artifacts/podcast-rescue-windows-x86_64.exe
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: podcast-rescue-windows-x86_64.exe
+          path: artifacts/podcast-rescue-windows-x86_64.exe
+
+  build-macos:
+    name: Build macOS (Universal: Apple Silicon + Intel)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - name: Build Apple Silicon (ARM64)
+        run: cargo build --release --target aarch64-apple-darwin
+      - name: Build Intel (x86_64)
+        run: cargo build --release --target x86_64-apple-darwin
+      - name: Create Universal Binary
+        run: |
+          mkdir -p artifacts
+          lipo -create -output artifacts/podcast-rescue-macos-universal \
+            target/aarch64-apple-darwin/release/podcast-rescue \
+            target/x86_64-apple-darwin/release/podcast-rescue
+          chmod +x artifacts/podcast-rescue-macos-universal
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: podcast-rescue-macos-universal
+          path: artifacts/podcast-rescue-macos-universal
