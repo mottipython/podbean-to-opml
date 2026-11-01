@@ -800,9 +800,9 @@
     const platforms = {
       podbean: {
         title: "Podbean Subscriptions",
-        subtitle: "Paginates 36 shows per page. Auto-crawler extracts all pages into a unified list.",
-        notice: "Podbean displays 36 subscriptions per page. The sync crawler walks Pages 1, 2, 3... to extract your complete library.",
-        url: "https://www.podbean.com/site/user/following"
+        subtitle: "Paginates followed shows. Auto-crawler extracts all pages into a unified list.",
+        notice: "Podbean stores subscriptions in your user profile. The sync crawler walks Pages 1, 2, 3... to extract your complete library.",
+        url: "https://www.podbean.com/site/userCenter/profile"
       },
       spotify: {
         title: "Spotify Podcast Library",
@@ -892,7 +892,7 @@
 
     function parseDoc(doc) {
       var hits = 0;
-      var els = doc.querySelectorAll('.card-title, a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .following-list a, .pod-item a, .sub-item a, .pod-name a');
+      var els = doc.querySelectorAll('.card-title, a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .following-list a, .pod-item a, .sub-item a, .pod-name a, .v-center a');
       els.forEach(function(el){
         var title = el.getAttribute('data-dir-podcast-title') || el.textContent || '';
         title = title.replace(/\\s+/g, ' ').trim();
@@ -916,10 +916,11 @@
 
     if (window.location.hostname.indexOf('podbean.com') !== -1) {
       var page = 2;
-      while (page <= 10) {
+      while (page <= 12) {
         statEl.textContent = 'Crawling Page ' + page + ' (' + list.length + ' shows)...';
-        var sep = window.location.href.indexOf('?') !== -1 ? '&' : '?';
-        var pUrl = window.location.href.replace(/([?&])page=\\d+/, '') + sep + 'page=' + page;
+        var baseHref = window.location.href.replace(/([?&])page2?=\\d+/g, '').replace(/([?&])pageSize=\\d+/g, '');
+        var sep = baseHref.indexOf('?') !== -1 ? '&' : '?';
+        var pUrl = baseHref + sep + 'page2=' + page + '&page=' + page;
         try {
           var r = await fetch(pUrl, { credentials: 'include' });
           if (!r.ok) break;
@@ -1005,17 +1006,17 @@
         } else {
           statusEl.style.display = 'block';
           statusEl.className = 'status-banner status-warning';
-          const isAuth = (data.error && data.error.includes('logged into your account')) || url.includes('/following') || url.includes('/user');
+          const isAuth = (data.error && data.error.includes('logged into your account')) || url.includes('/following') || url.includes('/user') || url.includes('user-') || url.includes('userCenter');
           if (isAuth) {
             statusEl.innerHTML = `
-              <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">🔒 Private Account Page Detected</div>
-              <div style="margin-bottom: 8px;">You are logged into Podbean in your browser, but this background application cannot access your browser's private login session cookies.</div>
+              <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">🔒 Private Account Profile Detected</div>
+              <div style="margin-bottom: 8px;">Your followed podcasts are private to your logged-in browser session. To rescue your complete library:</div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-                <button class="btn btn-primary" onclick="copyConsoleScript(true)">📋 Copy 1-Click Code & Open Podbean</button>
+                <button class="btn btn-primary" onclick="copyConsoleScript(true)">📋 Copy Code & Open Profile</button>
                 <button class="btn btn-secondary" onclick="copyConsoleScript(false)">📋 Copy Code Only</button>
               </div>
               <div style="font-size: 11.5px; color: var(--text-muted);">
-                <strong>How it works:</strong> Click above, go to your Podbean tab, press <code>F12</code> (Console), paste (<code>Ctrl+V</code>) and hit <code>Enter</code>. All 76 shows will sync in 2 seconds!
+                <strong>How to run:</strong> In the opened profile tab, press <code>F12</code> (Console), paste (<code>Ctrl+V</code>), and hit <code>Enter</code>. All 76 shows will sync in seconds!
               </div>
             `;
           } else {
@@ -1028,9 +1029,6 @@
         statusEl.textContent = 'Network error while contacting server: ' + err.message;
       } finally {
         btn.disabled = false;
-        btn.textContent = origText;
-      }
-    }
         btn.textContent = origText;
       }
     }
@@ -1068,6 +1066,29 @@
         if (data.shows) mergeIncomingShows(data.shows);
       }
     }
+
+    // Direct clipboard paste anywhere on the application window
+    window.addEventListener('paste', async (e) => {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+        return; // allow normal input handling
+      }
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      if (text && text.trim().length > 5) {
+        try {
+          const resp = await fetch('/api/parse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: text, platform: currentPlatform })
+          });
+          const data = await resp.json();
+          if (data.shows && data.shows.length > 0) {
+            showToast(`Pasted clipboard content recognized! Imported ${data.shows.length} shows.`);
+            mergeIncomingShows(data.shows);
+          }
+        } catch(err) {}
+      }
+    });
 
     function mergeIncomingShows(incoming) {
       const seen = new Set(libraryShows.map(s => s.title.toLowerCase().trim()));
