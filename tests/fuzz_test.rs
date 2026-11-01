@@ -1,4 +1,6 @@
-use podcast_rescue::opml::generate_opml_xml;
+use podcast_rescue::opml::{
+    generate_csv_export, generate_json_export, generate_opml_xml, parse_opml_feeds,
+};
 use podcast_rescue::parser::parse_content;
 use podcast_rescue::resolver::{authors_match, normalize_title};
 use podcast_rescue::types::ExportItem;
@@ -135,5 +137,47 @@ fn test_fuzz_opml_xml_integrity() {
                 assert!(!xml.contains(&format!("title=\"{}\"", item.title)));
             }
         }
+    }
+}
+
+#[test]
+fn test_fuzz_json_and_csv_export() {
+    let mut rng = FuzzRng::new(0xCAFEFEED);
+
+    for _ in 0..1_000 {
+        let count = (rng.next_u32() as usize % 15) + 1;
+        let mut items = Vec::new();
+        for _ in 0..count {
+            items.push(ExportItem {
+                title: rng.random_unicode_string(20),
+                feed_url: rng.random_string(60),
+            });
+        }
+
+        let res_json = catch_unwind(AssertUnwindSafe(|| generate_json_export(&items)));
+        assert!(res_json.is_ok(), "generate_json_export panicked");
+
+        let res_csv = catch_unwind(AssertUnwindSafe(|| generate_csv_export(&items)));
+        assert!(res_csv.is_ok(), "generate_csv_export panicked");
+    }
+}
+
+#[test]
+fn test_fuzz_opml_parser_no_panics() {
+    let mut rng = FuzzRng::new(0xBEEFCAFE);
+
+    for iteration in 0..2_000 {
+        let arbitrary_xml = match rng.next_u32() % 3 {
+            0 => rng.random_string(500),
+            1 => rng.random_unicode_string(40),
+            _ => format!(
+                r#"<opml><outline text="{}" xmlUrl="{}" /></opml>"#,
+                rng.random_unicode_string(10),
+                rng.random_string(50)
+            ),
+        };
+
+        let result = catch_unwind(AssertUnwindSafe(|| parse_opml_feeds(&arbitrary_xml)));
+        assert!(result.is_ok(), "parse_opml_feeds panicked on iteration {}", iteration);
     }
 }

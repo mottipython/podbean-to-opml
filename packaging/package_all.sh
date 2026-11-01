@@ -166,7 +166,7 @@ provides = podbean-to-opml
 EOF
 
 ARCH_OUT="${DIST_DIR}/${PKG_NAME}-${VERSION}-1-x86_64.pkg.tar.zst"
-(cd "${ARCH_ROOT}" && tar --owner=0 --group=0 --numeric-owner -cf - .PKGINFO usr | zstd -T0 -19 -o "${ARCH_OUT}")
+(cd "${ARCH_ROOT}" && tar --owner=0 --group=0 --numeric-owner -cf - .PKGINFO usr | zstd -f -T0 -19 -o "${ARCH_OUT}")
 echo "    [+] Arch package created: ${ARCH_OUT}"
 
 # Also generate PKGBUILD for Arch AUR users

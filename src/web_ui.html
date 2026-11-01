@@ -15,6 +15,7 @@
       --primary: #10b981;
       --primary-hover: #059669;
       --accent: #6366f1;
+      --accent-hover: #4f46e5;
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --danger: #ef4444;
@@ -28,7 +29,7 @@
       line-height: 1.6;
       padding: 2rem 1rem;
     }
-    .container { max-width: 960px; margin: 0 auto; }
+    .container { max-width: 980px; margin: 0 auto; }
     header {
       text-align: center;
       margin-bottom: 2rem;
@@ -48,6 +49,15 @@
     }
     h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
     .subtitle { color: var(--text-muted); font-size: 1.05rem; }
+
+    /* Action pill buttons under header */
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
 
     /* Platform Navigation Tabs */
     .tabs {
@@ -139,90 +149,110 @@
       color: #e2e8f0;
     }
 
-    /* Action buttons */
+    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.25rem;
+      padding: 0.65rem 1.25rem;
       border-radius: 0.5rem;
       font-weight: 600;
-      font-size: 0.95rem;
-      border: none;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      border: none;
       text-decoration: none;
     }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn-secondary { background: #334155; color: #fff; }
+    .btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
     .btn-secondary:hover { background: #475569; }
-    .btn-accent { background: var(--accent); color: #fff; }
-    .btn-accent:hover { opacity: 0.9; }
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover { background: var(--accent-hover); }
 
     /* Drop Zone */
     .drop-zone {
       border: 2px dashed #475569;
       border-radius: 0.75rem;
-      padding: 2.5rem 1.5rem;
+      padding: 3rem 1.5rem;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease;
       background: rgba(15, 23, 42, 0.4);
+      margin-bottom: 1rem;
     }
     .drop-zone:hover, .drop-zone.dragover {
       border-color: var(--primary);
       background: rgba(16, 185, 129, 0.05);
     }
-    .drop-icon { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--primary); }
-    .drop-text { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .drop-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .drop-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; }
     .drop-sub { font-size: 0.85rem; color: var(--text-muted); }
 
-    /* Text Paste Area */
-    .paste-toggle {
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      color: #a5b4fc;
-      cursor: pointer;
-      display: inline-block;
-    }
+    /* Paste area */
     textarea {
       width: 100%;
       height: 120px;
       background: #0f172a;
       border: 1px solid var(--card-border);
       border-radius: 0.5rem;
-      color: #fff;
       padding: 0.75rem;
-      font-family: monospace;
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
       resize: vertical;
     }
+    input[type="text"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .paste-toggle {
+      font-size: 0.85rem;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
 
-    /* Live Resolver Table */
+    /* Table */
     .results-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
+      font-size: 0.9rem;
     }
     .results-table th, .results-table td {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem;
       text-align: left;
-      border-bottom: 1px solid var(--card-border);
-      font-size: 0.9rem;
+      border-bottom: 1px solid #334155;
     }
     .results-table th {
       color: var(--text-muted);
       font-weight: 600;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      font-size: 0.75rem;
       letter-spacing: 0.05em;
     }
     .status-badge {
       display: inline-block;
-      padding: 0.2rem 0.55rem;
+      padding: 0.2rem 0.5rem;
       border-radius: 4px;
       font-size: 0.75rem;
       font-weight: 600;
@@ -230,19 +260,21 @@
     .status-resolved { background: rgba(16, 185, 129, 0.2); color: #34d399; }
     .status-ambiguous { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
     .status-notfound { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .status-custom { background: rgba(99, 102, 241, 0.25); color: #a5b4fc; }
 
-    /* Ambiguity Modal / Disambiguation card */
+    /* Disambiguation */
     .disambiguation-box {
-      background: #1e1e38;
-      border: 1px solid var(--accent);
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid var(--warning);
       border-radius: 0.75rem;
       padding: 1.25rem;
       margin-top: 1rem;
+      margin-bottom: 1rem;
     }
     .candidate-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.75rem;
       margin-top: 0.75rem;
     }
     .candidate-card {
@@ -279,6 +311,100 @@
       background: var(--primary);
       transition: width 0.3s ease;
     }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.75rem;
+    }
+    .modal-title { font-size: 1.25rem; font-weight: 700; }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .app-guide-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .app-guide-title {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.35rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .app-guide-steps {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      padding-left: 1.25rem;
+    }
+
+    /* Notification banner */
+    .success-banner {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    /* Clean OPML Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .stat-card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      text-align: center;
+    }
+    .stat-number { font-size: 1.5rem; font-weight: 700; }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -287,6 +413,15 @@
       <span class="badge">Universal • Cross-Platform • Zero Lock-In</span>
       <h1>Podcast Subscription Rescue</h1>
       <p class="subtitle">Export followed shows from Podbean, Spotify, Apple Podcasts, YouTube Music & more into standard OPML.</p>
+      
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="openImportGuide()" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">
+          📱 How to Import OPML into Your App
+        </button>
+        <button class="btn btn-secondary" onclick="openCustomFeedModal()" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">
+          🔒 + Add Private / Patreon Feed
+        </button>
+      </div>
     </header>
 
     <!-- Platform Selection Tabs -->
@@ -296,6 +431,7 @@
       <button class="tab-btn" onclick="switchPlatform('apple')">Apple Podcasts</button>
       <button class="tab-btn" onclick="switchPlatform('youtube')">YouTube Music</button>
       <button class="tab-btn" onclick="switchPlatform('universal')">Any HAR / Plain Text</button>
+      <button class="tab-btn" onclick="switchPlatform('clean')">🩺 Clean Existing OPML</button>
     </div>
 
     <!-- Walkthrough Card -->
@@ -318,20 +454,65 @@
     </div>
 
     <!-- Drop Zone & Paste Area -->
-    <div class="card">
+    <div class="card" id="drop-zone-card">
       <div class="drop-zone" id="drop-zone">
         <div class="drop-icon">📥</div>
-        <div class="drop-text">Drag & drop your .har, .json, or .txt file here</div>
-        <div class="drop-sub">Processed 100% locally on your machine</div>
-        <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.html">
+        <div class="drop-text" id="drop-text">Drag & drop your .har, .json, or .txt file here</div>
+        <div class="drop-sub" id="drop-sub">Processed 100% locally on your machine</div>
+        <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.html,.opml,.xml">
       </div>
 
-      <div style="text-align: right;">
+      <div style="text-align: right;" id="paste-toggle-row">
         <span class="paste-toggle" onclick="togglePasteArea()">+ Or paste raw text / JSON manually</span>
       </div>
       <div id="paste-container" style="display: none; margin-top: 0.5rem;">
-        <textarea id="paste-area" placeholder="Paste your HAR JSON, or show titles line-by-line (e.g. 'The Daily by The New York Times')..."></textarea>
-        <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="parsePastedText()">Parse Pasted Content</button>
+        <textarea id="paste-area" placeholder="Paste your HAR JSON, show titles line-by-line, or OPML XML..."></textarea>
+        <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="parsePastedText()">Process Pasted Content</button>
+      </div>
+    </div>
+
+    <!-- Clean OPML Card (shown when clean platform is active) -->
+    <div class="card" id="clean-opml-card" style="display: none;">
+      <div class="card-title">
+        <span>🩺</span>
+        <span id="clean-summary-header">OPML Health & Relocation Results</span>
+      </div>
+
+      <div class="stats-grid" id="clean-stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="stat-total" style="color: #60a5fa;">0</div>
+          <div class="stat-label">Total Checked</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-alive" style="color: #34d399;">0</div>
+          <div class="stat-label">Active Feeds</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-moved" style="color: #fbbf24;">0</div>
+          <div class="stat-label">Relocated Fixed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-dead" style="color: #f87171;">0</div>
+          <div class="stat-label">Dead / Inactive</div>
+        </div>
+      </div>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Show Title</th>
+            <th>Original Feed URL</th>
+            <th>Health Status</th>
+            <th>Current Working Feed</th>
+          </tr>
+        </thead>
+        <tbody id="clean-results-body"></tbody>
+      </table>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="downloadCleanedOpml()" id="btn-download-cleaned-opml" style="display: none;">
+          Download Cleaned OPML XML (.opml)
+        </button>
       </div>
     </div>
 
@@ -348,7 +529,10 @@
             <input type="checkbox" id="verify-feeds-toggle" checked> Verify live feeds & follow HTTP 301 / &lt;itunes:new-feed-url&gt; redirects
           </label>
         </div>
-        <button class="btn btn-primary" id="btn-start-resolve" onclick="resolveAllPodcasts()">Resolve RSS Feeds via Apple Directory</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary" onclick="openCustomFeedModal()" style="font-size: 0.85rem;">+ Add Private Feed</button>
+          <button class="btn btn-primary" id="btn-start-resolve" onclick="resolveAllPodcasts()">Resolve RSS Feeds via Apple Directory</button>
+        </div>
       </div>
 
       <div class="progress-bar-container" id="progress-container" style="display: none;">
@@ -374,10 +558,114 @@
         <tbody id="results-body"></tbody>
       </table>
 
+      <!-- Export Notification Banner -->
+      <div id="export-success-banner" class="success-banner" style="display: none;">
+        <span>🎉 OPML exported successfully! Import your file into AntennaPod, Pocket Casts, or Overcast.</span>
+        <button class="btn btn-secondary" onclick="openImportGuide()" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">View Guide</button>
+      </div>
+
       <!-- Export Buttons -->
-      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; flex-wrap: wrap;" id="export-actions">
-        <button class="btn btn-secondary" onclick="exportUnresolvedReport()" id="btn-unresolved" style="display: none;">Download Unresolved Report (.txt)</button>
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; flex-wrap: wrap;" id="export-actions">
+        <button class="btn btn-secondary" onclick="exportUnresolvedReport()" id="btn-unresolved" style="display: none;">Download Report (.txt)</button>
+        <button class="btn btn-secondary" onclick="exportCsvFile()" id="btn-export-csv" style="display: none;">Download CSV (.csv)</button>
+        <button class="btn btn-secondary" onclick="exportJsonFile()" id="btn-export-json" style="display: none;">Download JSON (.json)</button>
         <button class="btn btn-primary" onclick="exportOpmlFile()" id="btn-export-opml" style="display: none;">Download OPML XML (.opml)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: How to Import OPML Guide -->
+  <div class="modal-overlay" id="import-guide-modal" onclick="if(event.target === this) closeImportGuide()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">📱 How to Import OPML into Your Podcast App</div>
+        <button class="modal-close" onclick="closeImportGuide()">&times;</button>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Once you download your <code>.opml</code> file, follow the quick instructions below for your favorite podcast player:
+      </p>
+
+      <div class="app-guide-card">
+        <div class="app-guide-title">
+          <span>📻</span> AntennaPod (Android & F-Droid)
+        </div>
+        <ol class="app-guide-steps">
+          <li>Open AntennaPod and tap the <strong>Subscriptions</strong> tab.</li>
+          <li>Tap the <strong>+</strong> (Add Podcast) button.</li>
+          <li>Select <strong>Import / Export</strong> &rarr; <strong>OPML Import</strong>.</li>
+          <li>Choose your downloaded <code>podcasts_rescue.opml</code> file.</li>
+        </ol>
+      </div>
+
+      <div class="app-guide-card">
+        <div class="app-guide-title">
+          <span>🔴</span> Pocket Casts (iOS, Android & Web)
+        </div>
+        <ol class="app-guide-steps">
+          <li>Open Pocket Casts and go to your <strong>Profile</strong> tab.</li>
+          <li>Tap the <strong>Settings</strong> icon (⚙️) in the top corner.</li>
+          <li>Tap <strong>Storage & Data Use</strong> (or <strong>Import / Export</strong>).</li>
+          <li>Tap <strong>Import OPML</strong> and choose your downloaded file.</li>
+        </ol>
+      </div>
+
+      <div class="app-guide-card">
+        <div class="app-guide-title">
+          <span>🟠</span> Overcast (iOS)
+        </div>
+        <ol class="app-guide-steps">
+          <li>Open Overcast and tap the <strong>Settings (gear icon)</strong>.</li>
+          <li>Scroll down to the <strong>Nitpicky Details</strong> section.</li>
+          <li>Tap <strong>Import OPML</strong> and select your <code>podcasts_rescue.opml</code> file.</li>
+        </ol>
+      </div>
+
+      <div class="app-guide-card">
+        <div class="app-guide-title">
+          <span>🍎</span> Apple Podcasts (macOS & iOS)
+        </div>
+        <ol class="app-guide-steps">
+          <li>On macOS: Open Apple Podcasts, click <strong>File</strong> in the top menu bar &rarr; <strong>Add a Show by URL...</strong> or import OPML.</li>
+          <li>Or air-drop / open the <code>.opml</code> file directly with Apple Podcasts.</li>
+        </ol>
+      </div>
+
+      <div class="app-guide-card">
+        <div class="app-guide-title">
+          <span>🎧</span> Castro & Podcast Addict
+        </div>
+        <ol class="app-guide-steps">
+          <li><strong>Castro</strong>: Settings &rarr; Sideload / OPML &rarr; Import.</li>
+          <li><strong>Podcast Addict</strong>: Tap the top <strong>+</strong> button &rarr; Tap <strong>OPML</strong> &rarr; Import OPML.</li>
+        </ol>
+      </div>
+
+      <div style="text-align: right; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="closeImportGuide()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Private / Patreon Feed -->
+  <div class="modal-overlay" id="custom-feed-modal" onclick="if(event.target === this) closeCustomFeedModal()">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">🔒 Add Private / Patreon Feed</div>
+        <button class="modal-close" onclick="closeCustomFeedModal()">&times;</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Add private Patreon RSS links, Supercast member feeds, or any custom RSS feed directly into your export.
+      </p>
+
+      <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Show Title:</label>
+      <input type="text" id="custom-feed-title" placeholder="e.g. My Favorite Show (Patreon Bonus Feed)">
+
+      <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Direct RSS Feed URL:</label>
+      <input type="text" id="custom-feed-url" placeholder="https://feed.patreon.com/rss/...?auth=...">
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="closeCustomFeedModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="addCustomFeed()">Add to Library</button>
       </div>
     </div>
   </div>
@@ -386,62 +674,79 @@
     let currentPlatform = 'podbean';
     let parsedShows = [];
     let resolvedResults = [];
+    let cleanedOpmlData = null;
 
     const platforms = {
       podbean: {
         title: "Podbean Export Walkthrough",
         url: "https://www.podbean.com",
+        dropText: "Drag & drop your .har, .json, or .txt file here",
         steps: [
-          "Log in to <a href='https://www.podbean.com' target='_blank' style='color: #38bdf8;'>Podbean.com</a> in your desktop browser.",
-          "Open Developer Tools by pressing <kbd>F12</kbd> (or <kbd>Ctrl+Shift+I</kbd> / <kbd>Cmd+Opt+I</kbd>).",
-          "Switch to the <strong>Network</strong> tab in Developer Tools.",
-          "Go to your profile page and click through your <strong>Followed Podcasts</strong> pages.",
-          "Right-click anywhere in the Network tab and choose <strong>'Save all as HAR with content'</strong>.",
-          "Drop the saved <code>.har</code> file into the drop zone below!"
+          "Log in to Podbean.com in your desktop browser.",
+          "Open Developer Tools by pressing F12 (or Ctrl+Shift+I / Cmd+Opt+I).",
+          "Switch to the Network tab in Developer Tools.",
+          "Go to your profile page and click through your Followed Podcasts pages.",
+          "Right-click anywhere in the Network tab and choose 'Save all as HAR with content'.",
+          "Drop the saved .har file into the drop zone below!"
         ]
       },
       spotify: {
         title: "Spotify Saved Podcasts Walkthrough",
         url: "https://open.spotify.com",
+        dropText: "Drag & drop your Spotify .har file here",
         steps: [
-          "Open <a href='https://open.spotify.com' target='_blank' style='color: #38bdf8;'>Spotify Web Player</a> and log in.",
-          "Press <kbd>F12</kbd> to open Developer Tools and select the <strong>Network</strong> tab.",
-          "Click on <strong>Your Library</strong> and navigate to <strong>Podcasts</strong>.",
+          "Open Spotify Web Player and log in.",
+          "Press F12 to open Developer Tools and select the Network tab.",
+          "Click on Your Library and navigate to Podcasts.",
           "Scroll down so your followed podcasts load.",
-          "Right-click any request in the Network tab and choose <strong>'Save all as HAR with content'</strong>.",
-          "Drop the <code>.har</code> file into the drop zone!"
+          "Right-click any request in the Network tab and choose 'Save all as HAR with content'.",
+          "Drop the .har file into the drop zone!"
         ]
       },
       apple: {
         title: "Apple Podcasts Web Walkthrough",
         url: "https://podcasts.apple.com",
+        dropText: "Drag & drop your Apple Podcasts .har file here",
         steps: [
-          "Open <a href='https://podcasts.apple.com' target='_blank' style='color: #38bdf8;'>podcasts.apple.com</a>.",
-          "Press <kbd>F12</kbd> to open Developer Tools and click <strong>Network</strong>.",
+          "Open podcasts.apple.com.",
+          "Press F12 to open Developer Tools and click Network.",
           "Log in with your Apple ID and view your Subscribed / Followed shows.",
-          "Right-click the Network panel and select <strong>'Save all as HAR with content'</strong>.",
+          "Right-click the Network panel and select 'Save all as HAR with content'.",
           "Upload the saved file below."
         ]
       },
       youtube: {
         title: "YouTube Music Podcasts Walkthrough",
         url: "https://music.youtube.com",
+        dropText: "Drag & drop your YouTube Music .har file here",
         steps: [
-          "Open <a href='https://music.youtube.com' target='_blank' style='color: #38bdf8;'>music.youtube.com</a> in your browser.",
-          "Press <kbd>F12</kbd> and open the <strong>Network</strong> tab.",
-          "Go to <strong>Library</strong> &rarr; <strong>Podcasts</strong>.",
-          "Right-click in Developer Tools &rarr; <strong>'Save all as HAR with content'</strong>.",
+          "Open music.youtube.com in your browser.",
+          "Press F12 and open the Network tab.",
+          "Go to Library -> Podcasts.",
+          "Right-click in Developer Tools -> 'Save all as HAR with content'.",
           "Drop the file below."
         ]
       },
       universal: {
         title: "Any HAR, JSON, or Text List Walkthrough",
         url: "",
+        dropText: "Drag & drop any .har, .json, or .txt file here",
         steps: [
-          "You can drop a <code>.har</code> file from ANY website or podcast client.",
+          "Drop a .har file from ANY website or podcast client.",
           "Or upload any JSON file containing show titles.",
-          "Or paste raw plain text (one show per line, e.g. <code>The Daily by The New York Times</code>).",
+          "Or paste raw plain text (one show per line, e.g. 'The Daily by The New York Times').",
           "The engine will automatically extract titles, disambiguate publishers, and resolve live feeds."
+        ]
+      },
+      clean: {
+        title: "Clean & Revive Existing OPML",
+        url: "",
+        dropText: "Drag & drop your existing .opml file here to check & fix feeds",
+        steps: [
+          "Have an old OPML file from AntennaPod, Pocket Casts, or Google Podcasts?",
+          "Drop your existing .opml file below.",
+          "The engine will ping every feed, follow HTTP 301/308 redirects, and inspect <itunes:new-feed-url>.",
+          "Dead feeds are flagged and relocated feeds are automatically updated to clean canonical URLs."
         ]
       }
     };
@@ -452,10 +757,24 @@
       event.target.classList.add('active');
 
       const info = platforms[p];
-      document.getElementById('walkthrough-title').innerText = info.title;
+      document.getElementById('walkthrough-title').textContent = info.title;
+      document.getElementById('drop-text').textContent = info.dropText;
+      
       const list = document.getElementById('walkthrough-steps');
-      list.innerHTML = info.steps.map(s => `<li>${s}</li>`).join('');
+      list.replaceChildren();
+      info.steps.forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s;
+        list.appendChild(li);
+      });
+
       document.getElementById('btn-open-service').style.display = info.url ? 'inline-flex' : 'none';
+
+      if (p === 'clean') {
+        document.getElementById('resolution-card').style.display = 'none';
+      } else {
+        document.getElementById('clean-opml-card').style.display = 'none';
+      }
     }
 
     function openServiceUrl() {
@@ -466,6 +785,53 @@
     function togglePasteArea() {
       const el = document.getElementById('paste-container');
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Modal controls
+    function openImportGuide() {
+      document.getElementById('import-guide-modal').style.display = 'flex';
+    }
+    function closeImportGuide() {
+      document.getElementById('import-guide-modal').style.display = 'none';
+    }
+
+    function openCustomFeedModal() {
+      document.getElementById('custom-feed-modal').style.display = 'flex';
+    }
+    function closeCustomFeedModal() {
+      document.getElementById('custom-feed-modal').style.display = 'none';
+    }
+
+    function addCustomFeed() {
+      const title = document.getElementById('custom-feed-title').value.trim();
+      const url = document.getElementById('custom-feed-url').value.trim();
+
+      if (!title || !url) {
+        alert('Please enter both a show title and a feed URL.');
+        return;
+      }
+
+      resolvedResults.push({
+        status: 'Resolved',
+        original_title: title,
+        original_author: 'Custom / Private',
+        feed_url: url,
+        matched_title: title,
+        artist: 'Private Feed',
+        candidates: [],
+        reason: 'Manually added custom feed',
+        was_moved: false
+      });
+
+      document.getElementById('resolution-card').style.display = 'block';
+      document.getElementById('btn-export-opml').style.display = 'inline-flex';
+      document.getElementById('btn-export-json').style.display = 'inline-flex';
+      document.getElementById('btn-export-csv').style.display = 'inline-flex';
+      
+      renderResolvedResults();
+      closeCustomFeedModal();
+      document.getElementById('custom-feed-title').value = '';
+      document.getElementById('custom-feed-url').value = '';
     }
 
     // Drag and drop handlers
@@ -490,14 +856,25 @@
     function handleFile(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        sendContentToParse(e.target.result);
+        const content = e.target.result;
+        if (currentPlatform === 'clean' || file.name.endsWith('.opml') || content.includes('<opml')) {
+          sendContentToCleanOpml(content);
+        } else {
+          sendContentToParse(content);
+        }
       };
       reader.readAsText(file);
     }
 
     function parsePastedText() {
       const text = document.getElementById('paste-area').value;
-      if (text.trim()) sendContentToParse(text);
+      if (!text.trim()) return;
+
+      if (currentPlatform === 'clean' || text.includes('<opml')) {
+        sendContentToCleanOpml(text);
+      } else {
+        sendContentToParse(text);
+      }
     }
 
     async function sendContentToParse(content) {
@@ -509,6 +886,91 @@
       const data = await resp.json();
       parsedShows = data.shows;
       renderParsedShows();
+    }
+
+    async function sendContentToCleanOpml(opmlContent) {
+      document.getElementById('clean-opml-card').style.display = 'block';
+      document.getElementById('clean-summary-header').textContent = 'Analyzing and verifying OPML feeds...';
+      
+      const resp = await fetch('/api/clean/opml', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ opml_content: opmlContent })
+      });
+      const data = await resp.json();
+      cleanedOpmlData = data;
+      renderCleanOpmlResults(data);
+    }
+
+    function renderCleanOpmlResults(data) {
+      document.getElementById('clean-summary-header').textContent = `OPML Health & Relocation Results (${data.items.length} Feeds)`;
+      document.getElementById('stat-total').textContent = data.items.length;
+      document.getElementById('stat-alive').textContent = data.alive_count;
+      document.getElementById('stat-moved').textContent = data.moved_count;
+      document.getElementById('stat-dead').textContent = data.dead_count;
+
+      const tbody = document.getElementById('clean-results-body');
+      tbody.replaceChildren();
+
+      data.items.forEach(item => {
+        const tr = document.createElement('tr');
+
+        const tdTitle = document.createElement('td');
+        const strong = document.createElement('strong');
+        strong.textContent = item.title;
+        tdTitle.appendChild(strong);
+
+        const tdOrig = document.createElement('td');
+        tdOrig.style.fontSize = '0.75rem';
+        tdOrig.style.color = '#94a3b8';
+        tdOrig.textContent = item.original_feed_url;
+
+        const tdStatus = document.createElement('td');
+        const badge = document.createElement('span');
+        if (item.is_alive) {
+          if (item.was_moved) {
+            badge.className = 'status-badge status-ambiguous';
+            badge.textContent = 'Relocated';
+          } else {
+            badge.className = 'status-badge status-resolved';
+            badge.textContent = 'Active';
+          }
+        } else {
+          badge.className = 'status-badge status-notfound';
+          badge.textContent = 'Dead / Inactive';
+        }
+        tdStatus.appendChild(badge);
+
+        const tdCurrent = document.createElement('td');
+        if (item.is_alive) {
+          const link = document.createElement('a');
+          link.href = item.current_feed_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.style.color = '#10b981';
+          link.style.fontSize = '0.75rem';
+          link.textContent = item.current_feed_url;
+          tdCurrent.appendChild(link);
+        } else {
+          const err = document.createElement('span');
+          err.style.color = '#ef4444';
+          err.style.fontSize = '0.75rem';
+          err.textContent = item.error || 'Unreachable';
+          tdCurrent.appendChild(err);
+        }
+
+        tr.append(tdTitle, tdOrig, tdStatus, tdCurrent);
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('btn-download-cleaned-opml').style.display = 'inline-flex';
+      document.getElementById('clean-opml-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function downloadCleanedOpml() {
+      if (cleanedOpmlData && cleanedOpmlData.cleaned_opml) {
+        downloadBlob(cleanedOpmlData.cleaned_opml, 'cleaned_podcasts.opml', 'text/xml');
+      }
     }
 
     function renderParsedShows() {
@@ -559,7 +1021,7 @@
     async function resolveAllPodcasts() {
       const btn = document.getElementById('btn-start-resolve');
       btn.disabled = true;
-      btn.innerText = 'Resolving Feeds...';
+      btn.textContent = 'Resolving Feeds...';
 
       const verifyFeeds = document.getElementById('verify-feeds-toggle').checked;
       const progressContainer = document.getElementById('progress-container');
@@ -579,7 +1041,7 @@
 
       renderResolvedResults();
       btn.disabled = false;
-      btn.innerText = 'Re-Resolve Feeds';
+      btn.textContent = 'Re-Resolve Feeds';
     }
 
     function renderResolvedResults() {
@@ -619,8 +1081,13 @@
 
         if (r.status === 'Resolved') {
           hasResolved = true;
-          badgeClass = 'status-resolved';
-          badgeText = r.was_moved ? 'Moved / Resolved' : 'Resolved';
+          if (r.original_author === 'Custom / Private') {
+            badgeClass = 'status-custom';
+            badgeText = 'Private Feed';
+          } else {
+            badgeClass = 'status-resolved';
+            badgeText = r.was_moved ? 'Moved / Resolved' : 'Resolved';
+          }
           const link = document.createElement('a');
           link.href = r.feed_url;
           link.target = '_blank';
@@ -659,6 +1126,8 @@
       });
 
       document.getElementById('btn-export-opml').style.display = hasResolved ? 'inline-flex' : 'none';
+      document.getElementById('btn-export-csv').style.display = hasResolved ? 'inline-flex' : 'none';
+      document.getElementById('btn-export-json').style.display = hasResolved ? 'inline-flex' : 'none';
       document.getElementById('btn-unresolved').style.display = hasUnresolved ? 'inline-flex' : 'none';
 
       if (ambiguousList.length > 0) {
@@ -747,6 +1216,35 @@
       });
       const xml = await resp.text();
       downloadBlob(xml, 'podcasts_rescue.opml', 'text/xml');
+      document.getElementById('export-success-banner').style.display = 'flex';
+    }
+
+    async function exportJsonFile() {
+      const exportItems = resolvedResults
+        .filter(r => r.status === 'Resolved' && r.feed_url)
+        .map(r => ({ title: r.matched_title || r.original_title, feed_url: r.feed_url }));
+
+      const resp = await fetch('/api/export/json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: exportItems })
+      });
+      const json = await resp.text();
+      downloadBlob(json, 'podcasts_rescue.json', 'application/json');
+    }
+
+    async function exportCsvFile() {
+      const exportItems = resolvedResults
+        .filter(r => r.status === 'Resolved' && r.feed_url)
+        .map(r => ({ title: r.matched_title || r.original_title, feed_url: r.feed_url }));
+
+      const resp = await fetch('/api/export/csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: exportItems })
+      });
+      const csv = await resp.text();
+      downloadBlob(csv, 'podcasts_rescue.csv', 'text/csv');
     }
 
     async function exportUnresolvedReport() {
@@ -767,15 +1265,6 @@
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-    function escapeQuotes(str) {
-      if (!str) return '';
-      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
   </script>
 </body>

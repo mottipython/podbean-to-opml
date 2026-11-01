@@ -1,0 +1,13 @@
+target/
+dist/
+artifacts/
+.git/
+.github/
+*.har
+*.opml
+*.xml
+*.csv
+*.json
+titles*.txt
+__pycache__/
+*.pyc

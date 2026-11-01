@@ -55,8 +55,11 @@ Pre-built binaries and native distribution packages are available on the [**v0.2
 - **Publisher Disambiguation**: Matches publisher / artist metadata (`artistName`) against your subscription data to accurately resolve shows with identical or common names.
 - **No Silent Wrong Imports**: Eliminates blind keyword guessing. Ambiguous show titles are presented as clickable candidate cards right in the GUI so you can pick the right feed on the fly.
 - **Moved Feeds Detection**: Follows HTTP 301/308 redirects and parses `<itunes:new-feed-url>` tags to capture relocated canonical feeds.
+- **OPML Health Cleaner & Relocation Fixer**: Upload an existing OPML file to check feed availability, remove dead feeds, and automatically update migrated feeds.
+- **Private & Patreon Feed Support**: Add custom, private, or patron-only RSS feeds directly into your export queue.
+- **Multi-Format Export**: 1-click export to standard **OPML 1.0 XML**, structured **JSON**, or spreadsheet-ready **CSV**.
 - **1-Click Export**: Instant download of standard `podcasts_rescue.opml` and an `unresolved_report.txt` for shows requiring manual review.
-- **Dual Engine**: High-performance compiled **Rust** core with embedded Web GUI, plus a lightweight, zero-dependency **Python** fallback script.
+- **Dual Engine & Docker Ready**: High-performance compiled **Rust** core, lightweight Docker container, plus a zero-dependency **Python** fallback script.
 
 ---
 
@@ -80,10 +83,50 @@ The application will launch and **automatically open your default web browser** 
 
 ### 2. Follow the Browser Walkthrough
 
-1. **Select your platform tab** (Podbean, Spotify, Apple Podcasts, YouTube Music, or Universal).
+1. **Select your platform tab** (Podbean, Spotify, Apple Podcasts, YouTube Music, Universal, or Clean Existing OPML).
 2. **Follow the interactive steps** on the screen to capture your session archive (`.har`).
-3. **Drag & drop** your `.har`, `.json`, or text file onto the drop zone (or paste your show list).
-4. Click **"Resolve RSS Feeds via Apple Directory"**.
+3. **Drag & drop** your `.har`, `.json`, `.opml`, or text file onto the drop zone (or paste your show list).
+4. **Add Private / Patreon Feeds** (optional): Click **`🔒 + Add Private Feed`** in the header to include member-only feeds.
+5. Click **"Resolve RSS Feeds via Apple Directory"**.
+6. Review matches and export in **OPML**, **JSON**, or **CSV**!
+
+---
+
+## 💻 Terminal / Headless CLI Mode
+
+If you prefer running in the terminal without opening the browser:
+
+```bash
+# Extract and export to standard OPML
+podcast-rescue my_archive.har -o my_podcasts.opml -u unresolved.txt
+
+# Export directly to JSON or CSV
+podcast-rescue my_archive.har -o my_podcasts.json
+podcast-rescue my_archive.har -o my_podcasts.csv
+
+# Enable live HTTP feed verification to detect relocated feeds
+podcast-rescue my_archive.har --verify-feeds
+
+# Clean, verify, and fix an existing OPML file
+podcast-rescue --clean-opml old_subscriptions.opml -o cleaned_subscriptions.opml
+
+# Run Web GUI on a custom network host and port (e.g. for remote access)
+podcast-rescue --host 0.0.0.0 --port 3000 --no-browser
+```
+
+---
+
+## 🐳 Docker Deployment
+
+Run the Web GUI headlessly inside a lightweight, non-root Alpine container:
+
+```bash
+# Build the Docker image
+docker build -t podcast-rescue .
+
+# Run the container (access at http://localhost:3000)
+docker run -d -p 3000:3000 --name podcast-rescue podcast-rescue
+```4. Click **"Resolve RSS Feeds via Apple Directory"**.
 5. If any shows share identical titles, click the candidate card corresponding to your show.
 6. Click **"Download OPML XML"** to export your subscriptions!
 

@@ -58,3 +58,27 @@ pub struct ExportItem {
     pub title: String,
     pub feed_url: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CleanOpmlItemResult {
+    pub title: String,
+    pub original_feed_url: String,
+    pub current_feed_url: String,
+    pub is_alive: bool,
+    pub was_moved: bool,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CleanOpmlResponse {
+    pub items: Vec<CleanOpmlItemResult>,
+    pub alive_count: usize,
+    pub moved_count: usize,
+    pub dead_count: usize,
+    pub cleaned_opml: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CleanOpmlRequest {
+    pub opml_content: String,
+}
