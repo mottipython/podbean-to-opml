@@ -10,3 +10,7 @@ __pycache__/
 *$py.class
 .venv/
 env/
+
+# Rust
+target/
+**/*.rs.bk

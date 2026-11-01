@@ -1,0 +1,16 @@
+[package]
+name = "podcast-rescue"
+version = "0.2.0"
+edition = "2021"
+authors = ["Motti Schleider <motti.schleider@gmail.com>"]
+description = "Universal cross-platform podcast subscription rescuer and OPML exporter with web walkthrough GUI."
+license = "MIT"
+repository = "https://github.com/mottipython/podbean-to-opml"
+
+[dependencies]
+tiny_http = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ureq = { version = "2.10", features = ["json"] }
+percent-encoding = "2.3"
+regex = "1.10"

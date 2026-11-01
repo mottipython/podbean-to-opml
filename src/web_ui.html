@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podcast Subscription Rescue & OPML Exporter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --accent: #6366f1;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--text-muted); font-size: 1.05rem; }
+
+    /* Platform Navigation Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(30, 41, 59, 0.8);
+      padding: 0.4rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--card-border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Walkthrough Steps */
+    .steps-list {
+      list-style: none;
+      counter-reset: step-counter;
+      margin-bottom: 1.25rem;
+    }
+    .steps-list li {
+      counter-increment: step-counter;
+      position: relative;
+      padding-left: 2.5rem;
+      margin-bottom: 0.75rem;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+    .steps-list li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: -2px;
+      width: 1.75rem;
+      height: 1.75rem;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid var(--accent);
+      color: #a5b4fc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    kbd {
+      background: #334155;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+    }
+
+    /* Action buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary { background: #334155; color: #fff; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { opacity: 0.9; }
+
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed #475569;
+      border-radius: 0.75rem;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .drop-icon { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--primary); }
+    .drop-text { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .drop-sub { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Text Paste Area */
+    .paste-toggle {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #a5b4fc;
+      cursor: pointer;
+      display: inline-block;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      color: #fff;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      resize: vertical;
+    }
+
+    /* Live Resolver Table */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .results-table th, .results-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.9rem;
+    }
+    .results-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-resolved { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-ambiguous { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .status-notfound { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Ambiguity Modal / Disambiguation card */
+    .disambiguation-box {
+      background: #1e1e38;
+      border: 1px solid var(--accent);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .candidate-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 0.75rem;
+    }
+    .candidate-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .candidate-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .candidate-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .candidate-artist { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .candidate-feed { font-size: 0.75rem; color: #64748b; word-break: break-all; }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Universal • Cross-Platform • Zero Lock-In</span>
+      <h1>Podcast Subscription Rescue</h1>
+      <p class="subtitle">Export followed shows from Podbean, Spotify, Apple Podcasts, YouTube Music & more into standard OPML.</p>
+    </header>
+
+    <!-- Platform Selection Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchPlatform('podbean')">Podbean</button>
+      <button class="tab-btn" onclick="switchPlatform('spotify')">Spotify</button>
+      <button class="tab-btn" onclick="switchPlatform('apple')">Apple Podcasts</button>
+      <button class="tab-btn" onclick="switchPlatform('youtube')">YouTube Music</button>
+      <button class="tab-btn" onclick="switchPlatform('universal')">Any HAR / Plain Text</button>
+    </div>
+
+    <!-- Walkthrough Card -->
+    <div class="card" id="walkthrough-card">
+      <div class="card-title">
+        <span id="platform-icon">🎧</span>
+        <span id="walkthrough-title">Podbean Export Walkthrough</span>
+      </div>
+      <ol class="steps-list" id="walkthrough-steps">
+        <li>Log in to <a href="https://www.podbean.com" target="_blank" style="color: #38bdf8;">Podbean.com</a> in your desktop browser.</li>
+        <li>Open Developer Tools by pressing <kbd>F12</kbd> (or <kbd>Ctrl+Shift+I</kbd> / <kbd>Cmd+Opt+I</kbd>).</li>
+        <li>Switch to the <strong>Network</strong> tab in Developer Tools.</li>
+        <li>Go to your profile page and click through your <strong>Followed Podcasts</strong> pages.</li>
+        <li>Right-click anywhere in the Network tab and choose <strong>"Save all as HAR with content"</strong>.</li>
+        <li>Drop the saved <code>.har</code> file into the drop zone below!</li>
+      </ol>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="openServiceUrl()" id="btn-open-service">Open Service in Browser &rarr;</button>
+      </div>
+    </div>
+
+    <!-- Drop Zone & Paste Area -->
+    <div class="card">
+      <div class="drop-zone" id="drop-zone">
+        <div class="drop-icon">📥</div>
+        <div class="drop-text">Drag & drop your .har, .json, or .txt file here</div>
+        <div class="drop-sub">Processed 100% locally on your machine</div>
+        <input type="file" id="file-input" style="display: none;" accept=".har,.json,.txt,.html">
+      </div>
+
+      <div style="text-align: right;">
+        <span class="paste-toggle" onclick="togglePasteArea()">+ Or paste raw text / JSON manually</span>
+      </div>
+      <div id="paste-container" style="display: none; margin-top: 0.5rem;">
+        <textarea id="paste-area" placeholder="Paste your HAR JSON, or show titles line-by-line (e.g. 'The Daily by The New York Times')..."></textarea>
+        <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="parsePastedText()">Parse Pasted Content</button>
+      </div>
+    </div>
+
+    <!-- Parsed Shows & Resolution Dashboard -->
+    <div class="card" id="resolution-card" style="display: none;">
+      <div class="card-title">
+        <span>✨</span>
+        <span id="summary-header">Extracted Podcasts</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <label style="font-size: 0.85rem; color: #cbd5e1; cursor: pointer;">
+            <input type="checkbox" id="verify-feeds-toggle" checked> Verify live feeds & follow HTTP 301 / &lt;itunes:new-feed-url&gt; redirects
+          </label>
+        </div>
+        <button class="btn btn-primary" id="btn-start-resolve" onclick="resolveAllPodcasts()">Resolve RSS Feeds via Apple Directory</button>
+      </div>
+
+      <div class="progress-bar-container" id="progress-container" style="display: none;">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+
+      <!-- Ambiguity Disambiguation Section -->
+      <div id="ambiguity-section" style="display: none;" class="disambiguation-box">
+        <div style="font-weight: 600; margin-bottom: 0.25rem;">⚠️ Disambiguation Required</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);" id="ambiguity-desc">Multiple candidate feeds found. Select the correct one:</p>
+        <div class="candidate-grid" id="candidate-grid"></div>
+      </div>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Show Title</th>
+            <th>Publisher / Artist</th>
+            <th>Status</th>
+            <th>Feed URL</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+
+      <!-- Export Buttons -->
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; flex-wrap: wrap;" id="export-actions">
+        <button class="btn btn-secondary" onclick="exportUnresolvedReport()" id="btn-unresolved" style="display: none;">Download Unresolved Report (.txt)</button>
+        <button class="btn btn-primary" onclick="exportOpmlFile()" id="btn-export-opml" style="display: none;">Download OPML XML (.opml)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentPlatform = 'podbean';
+    let parsedShows = [];
+    let resolvedResults = [];
+
+    const platforms = {
+      podbean: {
+        title: "Podbean Export Walkthrough",
+        url: "https://www.podbean.com",
+        steps: [
+          "Log in to <a href='https://www.podbean.com' target='_blank' style='color: #38bdf8;'>Podbean.com</a> in your desktop browser.",
+          "Open Developer Tools by pressing <kbd>F12</kbd> (or <kbd>Ctrl+Shift+I</kbd> / <kbd>Cmd+Opt+I</kbd>).",
+          "Switch to the <strong>Network</strong> tab in Developer Tools.",
+          "Go to your profile page and click through your <strong>Followed Podcasts</strong> pages.",
+          "Right-click anywhere in the Network tab and choose <strong>'Save all as HAR with content'</strong>.",
+          "Drop the saved <code>.har</code> file into the drop zone below!"
+        ]
+      },
+      spotify: {
+        title: "Spotify Saved Podcasts Walkthrough",
+        url: "https://open.spotify.com",
+        steps: [
+          "Open <a href='https://open.spotify.com' target='_blank' style='color: #38bdf8;'>Spotify Web Player</a> and log in.",
+          "Press <kbd>F12</kbd> to open Developer Tools and select the <strong>Network</strong> tab.",
+          "Click on <strong>Your Library</strong> and navigate to <strong>Podcasts</strong>.",
+          "Scroll down so your followed podcasts load.",
+          "Right-click any request in the Network tab and choose <strong>'Save all as HAR with content'</strong>.",
+          "Drop the <code>.har</code> file into the drop zone!"
+        ]
+      },
+      apple: {
+        title: "Apple Podcasts Web Walkthrough",
+        url: "https://podcasts.apple.com",
+        steps: [
+          "Open <a href='https://podcasts.apple.com' target='_blank' style='color: #38bdf8;'>podcasts.apple.com</a>.",
+          "Press <kbd>F12</kbd> to open Developer Tools and click <strong>Network</strong>.",
+          "Log in with your Apple ID and view your Subscribed / Followed shows.",
+          "Right-click the Network panel and select <strong>'Save all as HAR with content'</strong>.",
+          "Upload the saved file below."
+        ]
+      },
+      youtube: {
+        title: "YouTube Music Podcasts Walkthrough",
+        url: "https://music.youtube.com",
+        steps: [
+          "Open <a href='https://music.youtube.com' target='_blank' style='color: #38bdf8;'>music.youtube.com</a> in your browser.",
+          "Press <kbd>F12</kbd> and open the <strong>Network</strong> tab.",
+          "Go to <strong>Library</strong> &rarr; <strong>Podcasts</strong>.",
+          "Right-click in Developer Tools &rarr; <strong>'Save all as HAR with content'</strong>.",
+          "Drop the file below."
+        ]
+      },
+      universal: {
+        title: "Any HAR, JSON, or Text List Walkthrough",
+        url: "",
+        steps: [
+          "You can drop a <code>.har</code> file from ANY website or podcast client.",
+          "Or upload any JSON file containing show titles.",
+          "Or paste raw plain text (one show per line, e.g. <code>The Daily by The New York Times</code>).",
+          "The engine will automatically extract titles, disambiguate publishers, and resolve live feeds."
+        ]
+      }
+    };
+
+    function switchPlatform(p) {
+      currentPlatform = p;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const info = platforms[p];
+      document.getElementById('walkthrough-title').innerText = info.title;
+      const list = document.getElementById('walkthrough-steps');
+      list.innerHTML = info.steps.map(s => `<li>${s}</li>`).join('');
+      document.getElementById('btn-open-service').style.display = info.url ? 'inline-flex' : 'none';
+    }
+
+    function openServiceUrl() {
+      const url = platforms[currentPlatform].url;
+      if (url) window.open(url, '_blank');
+    }
+
+    function togglePasteArea() {
+      const el = document.getElementById('paste-container');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        sendContentToParse(e.target.result);
+      };
+      reader.readAsText(file);
+    }
+
+    function parsePastedText() {
+      const text = document.getElementById('paste-area').value;
+      if (text.trim()) sendContentToParse(text);
+    }
+
+    async function sendContentToParse(content) {
+      const resp = await fetch('/api/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, platform: currentPlatform })
+      });
+      const data = await resp.json();
+      parsedShows = data.shows;
+      renderParsedShows();
+    }
+
+    function renderParsedShows() {
+      const card = document.getElementById('resolution-card');
+      card.style.display = 'block';
+      document.getElementById('summary-header').innerText = `Extracted Podcasts (${parsedShows.length} Shows Found)`;
+      
+      const tbody = document.getElementById('results-body');
+      tbody.innerHTML = parsedShows.map(s => `
+        <tr>
+          <td><strong>${escapeHtml(s.title)}</strong></td>
+          <td>${s.author ? escapeHtml(s.author) : '<span style="color:#64748b">Unknown</span>'}</td>
+          <td><span class="status-badge" style="background:#334155;color:#94a3b8">Pending</span></td>
+          <td style="color:#64748b">Not resolved yet</td>
+        </tr>
+      `).join('');
+
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function resolveAllPodcasts() {
+      const btn = document.getElementById('btn-start-resolve');
+      btn.disabled = true;
+      btn.innerText = 'Resolving Feeds...';
+
+      const verifyFeeds = document.getElementById('verify-feeds-toggle').checked;
+      const progressContainer = document.getElementById('progress-container');
+      const progressBar = document.getElementById('progress-bar');
+      progressContainer.style.display = 'block';
+      progressBar.style.width = '20%';
+
+      const resp = await fetch('/api/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shows: parsedShows, verify_feeds: verifyFeeds })
+      });
+
+      const data = await resp.json();
+      resolvedResults = data.results;
+      progressBar.style.width = '100%';
+
+      renderResolvedResults();
+      btn.disabled = false;
+      btn.innerText = 'Re-Resolve Feeds';
+    }
+
+    function renderResolvedResults() {
+      const tbody = document.getElementById('results-body');
+      tbody.innerHTML = '';
+
+      let hasResolved = false;
+      let hasUnresolved = false;
+      let ambiguousList = [];
+
+      resolvedResults.forEach((r, idx) => {
+        let badgeClass = 'status-notfound';
+        let badgeText = 'Not Found';
+        let feedDisplay = `<span style="color:#ef4444">${escapeHtml(r.reason)}</span>`;
+
+        if (r.status === 'Resolved') {
+          hasResolved = true;
+          badgeClass = 'status-resolved';
+          badgeText = r.was_moved ? 'Moved / Resolved' : 'Resolved';
+          feedDisplay = `<a href="${escapeHtml(r.feed_url)}" target="_blank" style="color:#10b981;font-size:0.8rem;text-decoration:none">${escapeHtml(r.feed_url)}</a>`;
+        } else if (r.status === 'Ambiguous') {
+          hasUnresolved = true;
+          badgeClass = 'status-ambiguous';
+          badgeText = 'Ambiguous';
+          feedDisplay = `<button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.75rem" onclick="showDisambiguation(${idx})">Select Feed (${r.candidates.length} options)</button>`;
+          ambiguousList.push(r);
+        } else {
+          hasUnresolved = true;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(r.original_title)}</strong></td>
+          <td>${r.original_author ? escapeHtml(r.original_author) : (r.artist ? escapeHtml(r.artist) : '<span style="color:#64748b">Unknown</span>')}</td>
+          <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+          <td>${feedDisplay}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('btn-export-opml').style.display = hasResolved ? 'inline-flex' : 'none';
+      document.getElementById('btn-unresolved').style.display = hasUnresolved ? 'inline-flex' : 'none';
+
+      if (ambiguousList.length > 0) {
+        showDisambiguation(resolvedResults.findIndex(r => r.status === 'Ambiguous'));
+      }
+    }
+
+    function showDisambiguation(idx) {
+      const r = resolvedResults[idx];
+      const section = document.getElementById('ambiguity-section');
+      section.style.display = 'block';
+      document.getElementById('ambiguity-desc').innerText = `Multiple candidate feeds found for "${r.original_title}". Click to select:`;
+
+      const grid = document.getElementById('candidate-grid');
+      grid.innerHTML = r.candidates.map(c => `
+        <div class="candidate-card" onclick="selectCandidate(${idx}, '${escapeQuotes(c.collection_name)}', '${escapeQuotes(c.feed_url)}', '${escapeQuotes(c.artist_name)}')">
+          <div>
+            <div class="candidate-name">${escapeHtml(c.collection_name)}</div>
+            <div class="candidate-artist">by ${escapeHtml(c.artist_name)}</div>
+          </div>
+          <div class="candidate-feed">${escapeHtml(c.feed_url)}</div>
+        </div>
+      `).join('') + `
+        <div class="candidate-card" style="border-style:dashed;" onclick="skipDisambiguation()">
+          <div style="font-weight:600;margin-bottom:0.25rem;">Skip Show</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">Leave unresolved for manual review</div>
+        </div>
+      `;
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function selectCandidate(resultIdx, name, feedUrl, artist) {
+      resolvedResults[resultIdx].status = 'Resolved';
+      resolvedResults[resultIdx].matched_title = name;
+      resolvedResults[resultIdx].feed_url = feedUrl;
+      resolvedResults[resultIdx].artist = artist;
+      resolvedResults[resultIdx].reason = 'Selected by user';
+
+      document.getElementById('ambiguity-section').style.display = 'none';
+      renderResolvedResults();
+    }
+
+    function skipDisambiguation() {
+      document.getElementById('ambiguity-section').style.display = 'none';
+    }
+
+    async function exportOpmlFile() {
+      const exportItems = resolvedResults
+        .filter(r => r.status === 'Resolved' && r.feed_url)
+        .map(r => ({ title: r.matched_title || r.original_title, feed_url: r.feed_url }));
+
+      const resp = await fetch('/api/export/opml', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: exportItems })
+      });
+      const xml = await resp.text();
+      downloadBlob(xml, 'podcasts_rescue.opml', 'text/xml');
+    }
+
+    async function exportUnresolvedReport() {
+      const resp = await fetch('/api/export/unresolved', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resolvedResults)
+      });
+      const text = await resp.text();
+      downloadBlob(text, 'unresolved_report.txt', 'text/plain');
+    }
+
+    function downloadBlob(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escapeQuotes(str) {
+      if (!str) return '';
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
