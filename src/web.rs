@@ -16,7 +16,7 @@ use tiny_http::{Header, Response, Server};
 const HTML_UI: &str = include_str!("web_ui.html");
 
 /// Exit after this long with no requests (the open UI polls every 2s, so only an abandoned server idles).
-const IDLE_EXIT: Duration = Duration::from_secs(30 * 60);
+const IDLE_EXIT: Duration = Duration::from_secs(5 * 60);
 
 /// Sites whose pages may post synced shows to the app (bookmarklet / console script / extension).
 fn origin_allowed(origin: &str) -> bool {
@@ -74,7 +74,7 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
         let mut request = match server.recv_timeout(Duration::from_secs(30)) {
             Ok(Some(r)) => r,
             Ok(None) if loopback_only && last_request.elapsed() > IDLE_EXIT => {
-                println!("Idle for 30 minutes, shutting down.");
+                println!("Idle for 5 minutes, shutting down.");
                 break;
             }
             Ok(None) => continue,
@@ -126,6 +126,12 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
             let resp = Response::from_string(HTML_UI.replace("__VERSION__", env!("CARGO_PKG_VERSION")).replace("__TOKEN__", &token)).with_header(header_html);
             let _ = request.respond(resp);
             continue;
+        }
+
+        if method == "POST" && url == "/api/shutdown" {
+            let _ = request.respond(Response::from_string("{\"status\":\"stopping\"}").with_header(header_json));
+            println!("Quit requested, shutting down.");
+            break;
         }
 
         if method == "GET" && (url == "/podcast-rescue-extension.zip" || url == "/podcast-rescue-extension-firefox.zip") {

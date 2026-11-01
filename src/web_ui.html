@@ -626,6 +626,7 @@
           Add RSS Feed
         </button>
         <button class="btn btn-secondary" onclick="openModal('guide-modal')">Import Guide</button>
+        <button class="btn btn-secondary" onclick="quitApp()" title="Stop the local server and close this app">Quit</button>
       </div>
     </div>
   </header>
@@ -1153,6 +1154,13 @@
 
     function setupBookmarklet(platform) {
       document.getElementById('bookmarklet-btn').href = 'javascript:' + encodeURIComponent(getRawScriptText(platform));
+    }
+
+    async function quitApp() {
+      if (!confirm('Quit Podcast Rescue? Export your OPML first: unsaved shows are lost.')) return;
+      try { await fetch('/api/shutdown', { method: 'POST' }); } catch (e) {}
+      document.body.innerHTML = '<div style="font:15px system-ui,sans-serif;color:#ededef;text-align:center;margin-top:20vh">Podcast Rescue has stopped.<br>You can close this tab.</div>';
+      window.close();
     }
 
     function extensionInstalled() {

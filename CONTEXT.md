@@ -18,4 +18,4 @@ Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked 
 ## Local server security (v0.4.0)
 - Per-run token (`X-Rescue-Token`) required on every `/api/*` call except `/api/auto-ingest`; the served page carries it and wraps `fetch`.
 - `/api/auto-ingest` allows cross-origin POST only from podbean.com, Spotify, Apple Podcasts, YouTube Music (HTTPS).
-- `Host` must be loopback unless bound to a non-loopback host (DNS-rebinding guard); server exits after 30 idle minutes when loopback-only.
+- `Host` must be loopback unless bound to a non-loopback host (DNS-rebinding guard); server exits after 5 idle minutes (the open UI polls every 2s, so only an abandoned server idles) or on the header **Quit** button (`POST /api/shutdown`) when loopback-only.
