@@ -35,16 +35,31 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Windows Binary
         run: cargo build --release
-      - name: Package
+      - name: Package Standalone Binary
         shell: bash
         run: |
           mkdir -p artifacts
           cp target/release/podcast-rescue.exe artifacts/podcast-rescue-windows-x86_64.exe
-      - name: Upload Windows Binary
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+      - name: Build Windows Installer (Setup.exe)
+        shell: pwsh
+        run: |
+          mkdir -p dist/packages
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows/podcast-rescue-setup.iss /DAppVersion=0.2.0
+          cp dist/packages/podcast-rescue-windows-x86_64-setup.exe artifacts/
+      - name: Upload Windows Standalone Binary
         uses: actions/upload-artifact@v4
         with:
           name: podcast-rescue-windows-x86_64.exe
           path: artifacts/podcast-rescue-windows-x86_64.exe
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: podcast-rescue-windows-x86_64-setup.exe
+          path: artifacts/podcast-rescue-windows-x86_64-setup.exe
 
   build-macos:
     name: Build macOS (Universal)

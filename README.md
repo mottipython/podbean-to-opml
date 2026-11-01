@@ -17,6 +17,13 @@ This tool extracts your followed podcasts from **Podbean**, **Spotify**, **Apple
 
 Pre-built binaries and native distribution packages are available on the [**v0.2.0 Release**](https://github.com/mottipython/podbean-to-opml/releases/latest):
 
+### 🪟 Windows Packages
+
+| Type | Package | Description |
+| :--- | :--- | :--- |
+| **Windows Installer** | [**`podcast-rescue-windows-x86_64-setup.exe`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-windows-x86_64-setup.exe) | Setup wizard with Start Menu shortcuts, Desktop icon, PATH integration, and uninstaller |
+| **Portable Zip** | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-windows-x86_64.zip) | Standalone portable executable (`podcast-rescue.exe`) |
+
 ### 🐧 Linux Distribution Packages
 
 | Distribution | Package | Install Command |
