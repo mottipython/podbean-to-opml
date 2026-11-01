@@ -19,7 +19,7 @@ pub fn generate_opml_xml(items: &[ExportItem], unresolved_count: usize) -> Strin
     }
 
     let mut sorted = items.to_vec();
-    sorted.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+    sorted.sort_by_key(|a| a.title.to_lowercase());
 
     for item in sorted {
         let escaped_title = escape_xml(&item.title);

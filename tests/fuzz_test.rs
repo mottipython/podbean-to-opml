@@ -1,22 +1,8 @@
+use podcast_rescue::opml::generate_opml_xml;
+use podcast_rescue::parser::parse_content;
+use podcast_rescue::resolver::{authors_match, normalize_title};
+use podcast_rescue::types::ExportItem;
 use std::panic::{catch_unwind, AssertUnwindSafe};
-
-// Bring modules from the crate
-#[path = "../src/types.rs"]
-mod types;
-
-#[path = "../src/parser.rs"]
-mod parser;
-
-#[path = "../src/resolver.rs"]
-mod resolver;
-
-#[path = "../src/opml.rs"]
-mod opml;
-
-use parser::parse_content;
-use resolver::{authors_match, normalize_title};
-use opml::generate_opml_xml;
-use types::ExportItem;
 
 /// Simple deterministic Pseudo-Random Generator for fuzzing without external crates
 struct FuzzRng {

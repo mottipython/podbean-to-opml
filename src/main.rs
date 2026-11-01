@@ -1,19 +1,12 @@
-mod browser;
-mod opml;
-mod parser;
-mod resolver;
-mod types;
-mod web;
-
-use browser::open_browser;
-use opml::{generate_opml_xml, generate_unresolved_report};
-use parser::parse_content;
-use resolver::search_apple_podcasts;
+use podcast_rescue::browser::open_browser;
+use podcast_rescue::opml::{generate_opml_xml, generate_unresolved_report};
+use podcast_rescue::parser::parse_content;
+use podcast_rescue::resolver::search_apple_podcasts;
+use podcast_rescue::types::{ExportItem, ResolveStatus};
+use podcast_rescue::web::run_web_server;
 use std::env;
 use std::fs;
 use std::path::Path;
-use types::{ExportItem, ResolveStatus};
-use web::run_web_server;
 
 fn print_banner() {
     println!("=================================================================");

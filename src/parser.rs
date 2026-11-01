@@ -46,8 +46,8 @@ pub fn scan_json_universal(val: &Value, platform: &str, map: &mut HashMap<String
                 if let Some(name_val) = obj.get("name") {
                     if let Some(name_str) = name_val.as_str() {
                         // Check if parent or sibling has publisher / uri: "spotify:show:..."
-                        let is_show = obj.get("uri").and_then(|u| u.as_str()).map_or(false, |u| u.starts_with("spotify:show:"))
-                            || obj.get("type").and_then(|t| t.as_str()).map_or(false, |t| t == "show")
+                        let is_show = obj.get("uri").and_then(|u| u.as_str()).is_some_and(|u| u.starts_with("spotify:show:"))
+                            || (obj.get("type").and_then(|t| t.as_str()) == Some("show"))
                             || obj.contains_key("publisher");
 
                         if is_show && name_str.trim().len() >= 2 {
@@ -66,7 +66,7 @@ pub fn scan_json_universal(val: &Value, platform: &str, map: &mut HashMap<String
                 if let Some(runs) = obj.get("runs").and_then(|r| r.as_array()) {
                     if !runs.is_empty() {
                         if let Some(first_text) = runs[0].get("text").and_then(|t| t.as_str()) {
-                            if obj.get("browseId").and_then(|b| b.as_str()).map_or(false, |b| b.starts_with("MPSP")) {
+                            if obj.get("browseId").and_then(|b| b.as_str()).is_some_and(|b| b.starts_with("MPSP")) {
                                 title = Some(first_text.trim().to_string());
                             }
                         }
@@ -223,7 +223,7 @@ pub fn parse_content(raw: &str, platform_hint: Option<&str>) -> Vec<PodcastShow>
     }
 
     let mut result: Vec<PodcastShow> = shows_map.into_values().collect();
-    result.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
+    result.sort_by_key(|a| a.title.to_lowercase());
     result
 }
 

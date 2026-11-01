@@ -72,7 +72,7 @@ fn is_executable_available(exe: &str) -> bool {
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .status()
-                .map_or(false, |s| s.success())
+                .is_ok_and(|s| s.success())
         }
     }
 }
@@ -103,11 +103,10 @@ pub fn open_browser(url: &str) -> bool {
 
         // Fallbacks if xdg-open is not found
         for browser in ["microsoft-edge", "google-chrome", "chromium", "firefox", "brave-browser"] {
-            if is_executable_available(browser) {
-                if Command::new(browser).arg(url).spawn().is_ok() {
+            if is_executable_available(browser)
+                && Command::new(browser).arg(url).spawn().is_ok() {
                     return true;
                 }
-            }
         }
         false
     }
