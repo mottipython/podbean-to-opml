@@ -938,7 +938,9 @@
 
     function parseDoc(doc) {
       var hits = 0;
-      var els = doc.querySelectorAll('.card-title, a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .following-list a, .pod-item a, .sub-item a, .pod-name a, .v-center a, .title a, a[title]');
+      var fh = Array.prototype.find.call(doc.querySelectorAll('h2'), function(h){ return /Followed Podcasts/.test(h.textContent); });
+      var root = fh ? fh.parentElement.parentElement : doc;
+      var els = root.querySelectorAll('.card-title, a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .following-list a, .pod-item a, .sub-item a, .pod-name a, .v-center a, .title a, a[title]');
       els.forEach(function(el){
         var title = el.getAttribute('data-dir-podcast-title') || el.getAttribute('title') || el.textContent || '';
         title = title.replace(/\\s+/g, ' ').trim();
@@ -997,7 +999,7 @@
     }
 
     statEl.textContent = 'Sending ' + list.length + ' shows to Podcast Rescue...';
-    var res = await fetch('http://127.0.0.1:3000/api/auto-ingest', {
+    var res = await fetch('${location.origin}/api/auto-ingest', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ shows: list, source: '${platform}' })
@@ -1035,7 +1037,7 @@
         statusEl.innerHTML = `
           <div style="font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
             <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
-            Connected to Browser Session — Listening on 127.0.0.1:3000
+            Connected to Browser Session — Listening on ${location.host}
           </div>
           <div style="margin-bottom: 8px; color: var(--text-secondary); font-size: 12.5px;">
             In the opened tab, press <strong>F12</strong> (Console), paste (<strong>Ctrl+V</strong>), and hit <strong>Enter</strong> — or click your saved bookmarklet. All shows across all pages will sync automatically!
@@ -1107,8 +1109,7 @@
     }
 
     function setupBookmarklet(platform) {
-      const script = 'javascript:' + getRawScriptText(platform);
-      document.getElementById('bookmarklet-btn').href = script.replace(/\s+/g, ' ');
+      document.getElementById('bookmarklet-btn').href = 'javascript:' + encodeURIComponent(getRawScriptText(platform));
     }
 
     // Direct Scrape URL
@@ -1133,18 +1134,7 @@
         statusEl.innerHTML = `
           <div style="font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 14px;">🔒 Private Account Profile Detected</div>
           <div style="margin-bottom: 10px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
-            Podbean keeps your subscriptions private to your logged-in browser session. Because you are logged into Edge on this machine, choose your preferred 1-click rescue method:
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-            <button class="btn btn-primary" onclick="launchAutomatedSync('podbean')">
-              🚀 Launch Profile & Auto-Sync
-            </button>
-            <button class="btn btn-secondary" onclick="pastePageClipboard()">
-              📋 Paste Copied Page (Ctrl+V)
-            </button>
-            <button class="btn btn-secondary" onclick="openModal('guide-modal')">
-              📖 View Sync Guide
-            </button>
+            Podbean keeps your subscriptions private to your logged-in browser session, which this app cannot see. Sync from inside your Podbean tab instead:
           </div>
           <div id="sync-telemetry-status" style="font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
             💡 <strong>Quickest zero-effort way:</strong> In your Podbean tab, press <code>Ctrl+A</code> then <code>Ctrl+C</code> (Select All & Copy), then click <strong>"Paste Copied Page"</strong> above! All shows will import instantly.

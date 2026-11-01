@@ -145,26 +145,6 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
             continue;
         }
 
-        if method == "POST" && url == "/api/auto-ingest" {
-            let mut body = String::new();
-            if request.as_reader().read_to_string(&mut body).is_ok() {
-                if let Ok(req) = serde_json::from_str::<AutoIngestRequest>(&body) {
-                    let json_resp = serde_json::json!({
-                        "count": req.shows.len(),
-                        "shows": req.shows,
-                        "status": "ingested"
-                    });
-                    let resp = Response::from_string(json_resp.to_string())
-                        .with_header(header_json)
-                        .with_header(header_cors);
-                    let _ = request.respond(resp);
-                    continue;
-                }
-            }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
-            continue;
-        }
-
         if method == "POST" && url == "/api/resolve" {
             let mut body = String::new();
             if request.as_reader().read_to_string(&mut body).is_ok() {
