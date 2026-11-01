@@ -227,6 +227,59 @@ pub fn parse_content(raw: &str, platform_hint: Option<&str>) -> Vec<PodcastShow>
     result
 }
 
+/// Fetches a remote web page, profile URL, RSS feed, or OPML file and automatically extracts show subscriptions.
+pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
+    let clean_url = url.trim();
+    if !clean_url.starts_with("http://") && !clean_url.starts_with("https://") {
+        return Err("URL must start with http:// or https://".to_string());
+    }
+
+    let agent = ureq::AgentBuilder::new()
+        .timeout(std::time::Duration::from_secs(12))
+        .redirects(5)
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+        .build();
+
+    let resp = agent
+        .get(clean_url)
+        .call()
+        .map_err(|e| format!("Failed to fetch URL '{}': {}", clean_url, e))?;
+
+    let body = resp
+        .into_string()
+        .map_err(|e| format!("Failed to read response body: {}", e))?;
+
+    let mut shows = parse_content(&body, None);
+
+    // If generic parser found nothing, try extracting <meta property="og:title"> or <title>
+    if shows.is_empty() {
+        let re_og_title = Regex::new(r#"<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']"#).unwrap();
+        let re_title = Regex::new(r#"<title\b[^>]*>(.*?)</title>"#).unwrap();
+
+        let extracted_title = re_og_title
+            .captures(&body)
+            .map(|c| c[1].to_string())
+            .or_else(|| re_title.captures(&body).map(|c| c[1].to_string()));
+
+        if let Some(mut title) = extracted_title {
+            for suffix in &[" | Podbean", " - Podbean", " - Spotify", " on Apple Podcasts", " - YouTube"] {
+                if let Some(idx) = title.find(suffix) {
+                    title = title[..idx].trim().to_string();
+                }
+            }
+            if title.len() >= 2 {
+                shows.push(PodcastShow {
+                    title,
+                    author: None,
+                    source: "URL Scraper".to_string(),
+                });
+            }
+        }
+    }
+
+    Ok(shows)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

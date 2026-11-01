@@ -1,10 +1,13 @@
 use crate::opml::{
     clean_opml, generate_csv_export, generate_json_export, generate_opml_xml, generate_unresolved_report,
 };
-use crate::parser::parse_content;
+use crate::parser::{parse_content, scrape_url};
 use crate::resolver::search_apple_podcasts;
-use crate::types::{CleanOpmlRequest, ExportOpmlRequest, ParseRequest, ResolveRequest, ResolveResult};
-use std::sync::Arc;
+use crate::types::{
+    AutoIngestRequest, CleanOpmlRequest, ExportOpmlRequest, ParseRequest, PodcastShow, ResolveRequest,
+    ResolveResult, ScrapeUrlRequest,
+};
+use std::sync::{Arc, Mutex};
 use tiny_http::{Header, Response, Server};
 
 const HTML_UI: &str = include_str!("web_ui.html");
@@ -13,10 +16,11 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
     let addr = format!("{}:{}", host, port);
     let server = Server::http(&addr).map_err(|e| format!("Failed to bind to {}: {}", addr, e))?;
     let server = Arc::new(server);
+    let ingest_queue: Arc<Mutex<Vec<PodcastShow>>> = Arc::new(Mutex::new(Vec::new()));
 
     let display_host = if host == "0.0.0.0" { "localhost" } else { host };
     println!("=================================================================");
-    println!(" 🚀 Podcast Rescue GUI Server running at http://{}:{}", display_host, port);
+    println!(" 🚀 Podcast Rescue Cockpit running at http://{}:{}", display_host, port);
     println!(" Open this URL in your web browser if it did not open automatically.");
     println!(" Press Ctrl+C in terminal to stop.");
     println!("=================================================================");
@@ -31,10 +35,59 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
         let header_text = Header::from_bytes(&b"Content-Type"[..], &b"text/plain; charset=utf-8"[..]).unwrap();
         let header_csv = Header::from_bytes(&b"Content-Type"[..], &b"text/csv; charset=utf-8"[..]).unwrap();
         let header_cors = Header::from_bytes(&b"Access-Control-Allow-Origin"[..], &b"*"[..]).unwrap();
+        let header_cors_methods = Header::from_bytes(&b"Access-Control-Allow-Methods"[..], &b"GET, POST, OPTIONS"[..]).unwrap();
+        let header_cors_headers = Header::from_bytes(&b"Access-Control-Allow-Headers"[..], &b"Content-Type"[..]).unwrap();
+
+        if method == "OPTIONS" {
+            let resp = Response::empty(200)
+                .with_header(header_cors)
+                .with_header(header_cors_methods)
+                .with_header(header_cors_headers);
+            let _ = request.respond(resp);
+            continue;
+        }
 
         if method == "GET" && (url == "/" || url.starts_with("/index")) {
             let resp = Response::from_string(HTML_UI).with_header(header_html);
             let _ = request.respond(resp);
+            continue;
+        }
+
+        if method == "GET" && url == "/api/poll-ingest" {
+            let mut queue = ingest_queue.lock().unwrap();
+            let shows: Vec<PodcastShow> = queue.drain(..).collect();
+            let json_resp = serde_json::json!({
+                "count": shows.len(),
+                "shows": shows
+            });
+            let resp = Response::from_string(json_resp.to_string())
+                .with_header(header_json)
+                .with_header(header_cors);
+            let _ = request.respond(resp);
+            continue;
+        }
+
+        if method == "POST" && url == "/api/auto-ingest" {
+            let mut body = String::new();
+            if request.as_reader().read_to_string(&mut body).is_ok() {
+                if let Ok(req) = serde_json::from_str::<AutoIngestRequest>(&body) {
+                    let mut queue = ingest_queue.lock().unwrap();
+                    let count = req.shows.len();
+                    queue.extend(req.shows.clone());
+
+                    let json_resp = serde_json::json!({
+                        "count": count,
+                        "shows": req.shows,
+                        "status": "queued"
+                    });
+                    let resp = Response::from_string(json_resp.to_string())
+                        .with_header(header_json)
+                        .with_header(header_cors);
+                    let _ = request.respond(resp);
+                    continue;
+                }
+            }
+            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
             continue;
         }
 
@@ -46,6 +99,60 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     let json_resp = serde_json::json!({
                         "count": shows.len(),
                         "shows": shows
+                    });
+                    let resp = Response::from_string(json_resp.to_string())
+                        .with_header(header_json)
+                        .with_header(header_cors);
+                    let _ = request.respond(resp);
+                    continue;
+                }
+            }
+            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            continue;
+        }
+
+        if method == "POST" && url == "/api/scrape-url" {
+            let mut body = String::new();
+            if request.as_reader().read_to_string(&mut body).is_ok() {
+                if let Ok(req) = serde_json::from_str::<ScrapeUrlRequest>(&body) {
+                    match scrape_url(&req.url) {
+                        Ok(shows) => {
+                            let json_resp = serde_json::json!({
+                                "count": shows.len(),
+                                "shows": shows
+                            });
+                            let resp = Response::from_string(json_resp.to_string())
+                                .with_header(header_json)
+                                .with_header(header_cors);
+                            let _ = request.respond(resp);
+                            continue;
+                        }
+                        Err(err) => {
+                            let json_err = serde_json::json!({
+                                "error": err
+                            });
+                            let resp = Response::from_string(json_err.to_string())
+                                .with_header(header_json)
+                                .with_header(header_cors)
+                                .with_status_code(400);
+                            let _ = request.respond(resp);
+                            continue;
+                        }
+                    }
+                }
+            }
+            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            continue;
+        }
+
+        if method == "POST" && url == "/api/auto-ingest" {
+            let mut body = String::new();
+            if request.as_reader().read_to_string(&mut body).is_ok() {
+                if let Ok(req) = serde_json::from_str::<AutoIngestRequest>(&body) {
+                    let json_resp = serde_json::json!({
+                        "count": req.shows.len(),
+                        "shows": req.shows,
+                        "status": "ingested"
                     });
                     let resp = Response::from_string(json_resp.to_string())
                         .with_header(header_json)

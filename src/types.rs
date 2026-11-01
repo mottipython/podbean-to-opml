@@ -82,3 +82,14 @@ pub struct CleanOpmlResponse {
 pub struct CleanOpmlRequest {
     pub opml_content: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScrapeUrlRequest {
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AutoIngestRequest {
+    pub shows: Vec<PodcastShow>,
+    pub source: Option<String>,
+}
