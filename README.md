@@ -15,30 +15,32 @@ This tool extracts your followed podcasts from **Podbean**, **Spotify**, **Apple
 
 ## 📦 Downloads & Native Packages
 
-Pre-built binaries and native distribution packages are available on the [**v0.2.0 Release**](https://github.com/mottipython/podbean-to-opml/releases/latest):
+Pre-built binaries and native distribution packages are on the [**latest release**](https://github.com/mottipython/podbean-to-opml/releases/latest).
+
+> **Note:** the packages below are v0.3.0 and predate the [browser extension](#-browser-extension-paste-a-profile-link-sync-as-the-logged-in-account) and the sync fixes. To use them now, run from source (`cargo run --release`).
 
 ### 🪟 Windows Packages
 
 | Type | Package | Description |
 | :--- | :--- | :--- |
-| **Windows Installer** | [**`podcast-rescue-windows-x86_64-setup.exe`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-windows-x86_64-setup.exe) | Setup wizard with Start Menu shortcuts, Desktop icon, PATH integration, and uninstaller |
-| **Portable Zip** | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-windows-x86_64.zip) | Standalone portable executable (`podcast-rescue.exe`) |
+| **Windows Installer** | [**`podcast-rescue-windows-x86_64-setup.exe`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-windows-x86_64-setup.exe) | Setup wizard with Start Menu shortcuts, Desktop icon, PATH integration, and uninstaller |
+| **Portable Zip** | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-windows-x86_64.zip) | Standalone portable executable (`podcast-rescue.exe`) |
 
 ### 🐧 Linux Distribution Packages
 
 | Distribution | Package | Install Command |
 | :--- | :--- | :--- |
-| **Fedora / RHEL / CentOS / openSUSE** | [**`.rpm` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-0.2.0-1.fc44.x86_64.rpm) | `sudo dnf install ./podcast-rescue-*.rpm` |
-| **Ubuntu / Debian / Linux Mint / Pop!_OS** | [**`.deb` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue_0.2.0-1_amd64.deb) | `sudo apt install ./podcast-rescue_*.deb` |
-| **Arch Linux / Manjaro / EndeavourOS / SteamOS** | [**`.pkg.tar.zst` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-0.2.0-1-x86_64.pkg.tar.zst) • [**`PKGBUILD`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/PKGBUILD) | `sudo pacman -U ./podcast-rescue-*.pkg.tar.zst` |
+| **Fedora / RHEL / CentOS / openSUSE** | [**`.rpm` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-0.3.0-1.fc44.x86_64.rpm) | `sudo dnf install ./podcast-rescue-*.rpm` |
+| **Ubuntu / Debian / Linux Mint / Pop!_OS** | [**`.deb` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue_0.3.0-1_amd64.deb) | `sudo apt install ./podcast-rescue_*.deb` |
+| **Arch Linux / Manjaro / EndeavourOS / SteamOS** | [**`.pkg.tar.zst` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-0.3.0-1-x86_64.pkg.tar.zst) • [**`PKGBUILD`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/PKGBUILD) | `sudo pacman -U ./podcast-rescue-*.pkg.tar.zst` |
 
 ### 💻 Standalone Portable Binaries
 
 | Operating System | Architecture | Package |
 | :--- | :--- | :--- |
-| **Windows** | x86_64 (64-bit) | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-windows-x86_64.zip) (`.exe`) |
-| **macOS** | Universal (Apple Silicon M1/M2/M3/M4 & Intel) | [**`podcast-rescue-macos-universal.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-macos-universal.tar.gz) |
-| **Linux** | x86_64 | [**`podcast-rescue-linux-x86_64.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.2.0/podcast-rescue-linux-x86_64.tar.gz) |
+| **Windows** | x86_64 (64-bit) | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-windows-x86_64.zip) (`.exe`) |
+| **macOS** | Universal (Apple Silicon M1/M2/M3/M4 & Intel) | [**`podcast-rescue-macos-universal.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-macos-universal.tar.gz) |
+| **Linux** | x86_64 | [**`podcast-rescue-linux-x86_64.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-linux-x86_64.tar.gz) |
 
 ---
 
@@ -51,6 +53,7 @@ Pre-built binaries and native distribution packages are available on the [**v0.2
   - 🍎 **Apple Podcasts Web** (subscribed library)
   - ▶️ **YouTube Music** (podcast channel subscriptions)
   - 🌐 **Any HAR, JSON, or Plaintext** (drag-and-drop or copy-paste)
+- **Browser Extension (Chrome, Edge, Brave, Opera, Vivaldi, Firefox)**: paste your Podbean profile link and sync your private followed-podcasts list as the account you are already logged in to. Installed from inside the app.
 - **Step-by-Step Interactive Walkthrough**: Built-in visual guides tailored for each platform showing how to grab your network archive in 3 clicks.
 - **Publisher Disambiguation**: Matches publisher / artist metadata (`artistName`) against your subscription data to accurately resolve shows with identical or common names.
 - **No Silent Wrong Imports**: Eliminates blind keyword guessing. Ambiguous show titles are presented as clickable candidate cards right in the GUI so you can pick the right feed on the fly.
@@ -95,14 +98,26 @@ cargo run --release
 
 The application will launch and **automatically open your default web browser** to `http://127.0.0.1:3000`.
 
-### 2. Follow the Browser Walkthrough
+### 2. Podbean: sync your followed podcasts
+
+Podbean keeps your followed list private to your browser session, so a local app cannot fetch it from a link alone. Pick one:
+
+1. **Extension (recommended):** install it from the app (see [Browser Extension](#-browser-extension-paste-a-profile-link-sync-as-the-logged-in-account)), paste your profile link (`https://www.podbean.com/user-...`), click **Fetch & Ingest**.
+2. **Bookmark button (any browser, including Safari):** drag **Rescue Library (Bookmark)** to your bookmarks bar, open your Podbean profile while logged in, click it.
+3. **Console script:** click **Launch Profile & Auto-Sync**, then paste the copied script into the browser console (`F12`) on your profile page.
+4. **Paste page:** on your profile, `Ctrl+A`, `Ctrl+C`, then **Paste from Clipboard** (only the page you are on).
+
+Your profile page shows "Followed Podcasts: N". Podbean may list fewer shows than N if some were removed.
+
+### 3. Follow the Browser Walkthrough for other platforms
 
 1. **Select your platform tab** (Podbean, Spotify, Apple Podcasts, YouTube Music, Universal, or Clean Existing OPML).
 2. **Follow the interactive steps** on the screen to capture your session archive (`.har`).
 3. **Drag & drop** your `.har`, `.json`, `.opml`, or text file onto the drop zone (or paste your show list).
 4. **Add Private / Patreon Feeds** (optional): Click **`🔒 + Add Private Feed`** in the header to include member-only feeds.
 5. Click **"Resolve RSS Feeds via Apple Directory"**.
-6. Review matches and export in **OPML**, **JSON**, or **CSV**!
+6. Pick the right feed on any **ambiguous** card (same title from several publishers), then export in **OPML**, **JSON**, or **CSV**.
+7. Import the `.opml` into your podcast app (see **Import Guide** in the header).
 
 ---
 
