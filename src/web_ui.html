@@ -834,6 +834,12 @@
   </div>
 
   <script>
+    const RESCUE_TOKEN = '__TOKEN__';
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = (url, opts = {}) =>
+      typeof url === 'string' && url.startsWith('/')
+        ? nativeFetch(url, { ...opts, headers: { ...opts.headers, 'X-Rescue-Token': RESCUE_TOKEN } })
+        : nativeFetch(url, opts);
     let currentPlatform = 'podbean';
     let libraryShows = [];
     let resolvedMap = new Map();

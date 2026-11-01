@@ -14,3 +14,8 @@ Rust crate `podcast-rescue`: exports podcast subscriptions to OPML via a local b
 
 ## End-to-end check (2026-11-01)
 Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked by publisher) -> OPML 70 unique feeds. Works in Chrome and Firefox 158.
+
+## Local server security (v0.4.0)
+- Per-run token (`X-Rescue-Token`) required on every `/api/*` call except `/api/auto-ingest`; the served page carries it and wraps `fetch`.
+- `/api/auto-ingest` allows cross-origin POST only from podbean.com, Spotify, Apple Podcasts, YouTube Music (HTTPS).
+- `Host` must be loopback unless bound to a non-loopback host (DNS-rebinding guard); server exits after 30 idle minutes when loopback-only.
