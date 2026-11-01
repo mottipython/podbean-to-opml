@@ -63,6 +63,20 @@ Pre-built binaries and native distribution packages are available on the [**v0.2
 
 ---
 
+## 🔌 Browser Extension (paste a profile link, sync as the logged-in account)
+
+Podbean keeps your followed podcasts private to your browser session, which a local app cannot see. The bundled extension runs inside your own Podbean tab, so **Fetch & Ingest** works on a pasted profile link.
+
+1. In the app, click **Install Browser Extension** and follow the steps for your browser.
+   - **Chrome, Edge, Brave, Opera, Vivaldi:** download the zip, unzip, then *Load unpacked* on the extensions page (Developer mode on).
+   - **Firefox:** download the Firefox zip, then *Load Temporary Add-on* on `about:debugging` (removed on restart).
+   - **Safari:** only signed extensions load, so use the **Rescue Library (Bookmark)** button instead.
+2. Reload the app, paste your Podbean profile link, click **Fetch & Ingest**. A tab opens, syncs, and the shows appear in the app.
+
+The extension only runs on `*.podbean.com` and the local app, and only sends data to the app's own address.
+
+---
+
 ## 🖥️ How to Use (Web GUI Walkthrough)
 
 ### 1. Launch the Application

@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Podcast Rescue Bridge",
+  "version": "__VERSION__",
+  "description": "Lets the Podcast Rescue app read your followed podcasts from your logged-in Podbean session.",
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.podbean.com/*"],
+      "js": ["podbean.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://127.0.0.1/*", "http://localhost/*"],
+      "js": ["cockpit.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

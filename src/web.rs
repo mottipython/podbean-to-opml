@@ -53,6 +53,22 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
             continue;
         }
 
+        if method == "GET" && (url == "/podcast-rescue-extension.zip" || url == "/podcast-rescue-extension-firefox.zip") {
+            let firefox = url.contains("firefox");
+            let name = if firefox { "podcast-rescue-extension-firefox.zip" } else { "podcast-rescue-extension.zip" };
+            let resp = Response::from_data(crate::extension::extension_zip(firefox))
+                .with_header(Header::from_bytes(&b"Content-Type"[..], &b"application/zip"[..]).unwrap())
+                .with_header(
+                    Header::from_bytes(
+                        &b"Content-Disposition"[..],
+                        format!("attachment; filename=\"{name}\"").as_bytes(),
+                    )
+                    .unwrap(),
+                );
+            let _ = request.respond(resp);
+            continue;
+        }
+
         if method == "GET" && url == "/api/poll-ingest" {
             let mut queue = ingest_queue.lock().unwrap();
             let shows: Vec<PodcastShow> = queue.drain(..).collect();

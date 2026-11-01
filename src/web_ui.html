@@ -674,6 +674,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
               Launch Profile & Auto-Sync
             </button>
+            <button class="btn btn-secondary" id="btn-ext" onclick="openModal('ext-modal')">Install Browser Extension</button>
             <button class="btn btn-secondary" onclick="pastePageClipboard()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
               Paste from Clipboard
@@ -768,6 +769,42 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('guide-modal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Browser Extension -->
+  <div class="modal-backdrop" id="ext-modal" onclick="if(event.target === this) closeModal('ext-modal')">
+    <div class="modal-sheet">
+      <div class="modal-header-bar">
+        <div class="modal-header-title">Browser Extension</div>
+        <button class="btn btn-secondary" style="height: 24px; padding: 0 8px;" onclick="closeModal('ext-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="guide-item" id="ext-status"></div>
+        <div class="guide-item">
+          <div class="guide-app-name">Chrome, Edge, Brave, Opera, Vivaldi</div>
+          <div class="guide-path">
+            <a href="/podcast-rescue-extension.zip" download>Download the extension</a> and unzip it. Open <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>), turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and pick the unzipped <code>podcast-rescue-extension</code> folder.
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-app-name">Firefox</div>
+          <div class="guide-path">
+            <a href="/podcast-rescue-extension-firefox.zip" download>Download the Firefox extension</a> and unzip it. Open <code>about:debugging#/runtime/this-firefox</code>, click <strong>Load Temporary Add-on</strong>, and pick <code>manifest.json</code> inside the folder. Firefox removes it on restart, so repeat when needed.
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-app-name">Safari</div>
+          <div class="guide-path">Safari only loads signed extensions, so use the <strong>Rescue Library (Bookmark)</strong> button instead: drag it to your bookmarks bar, open your Podbean page, and click it.</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-app-name">After installing</div>
+          <div class="guide-path">Reload this page, paste your Podbean profile link, and click <strong>Fetch &amp; Ingest</strong>. A new tab opens, syncs as the account you are logged in to, and sends the shows back here.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('ext-modal')">Done</button>
       </div>
     </div>
   </div>
@@ -1112,6 +1149,19 @@
       document.getElementById('bookmarklet-btn').href = 'javascript:' + encodeURIComponent(getRawScriptText(platform));
     }
 
+    function extensionInstalled() {
+      return !!document.documentElement.dataset.podrescueExt;
+    }
+
+    function refreshExtensionStatus() {
+      const on = extensionInstalled();
+      document.getElementById('btn-ext').textContent = on ? 'Extension installed ✓' : 'Install Browser Extension';
+      document.getElementById('ext-status').innerHTML = on
+        ? '<div class="guide-app-name">✓ Extension detected</div><div class="guide-path">Paste your profile link and click Fetch &amp; Ingest.</div>'
+        : '<div class="guide-app-name">Not detected yet</div><div class="guide-path">Install it for your browser below, then reload this page.</div>';
+    }
+    refreshExtensionStatus();
+
     // Direct Scrape URL
     async function handleScrapeUrl() {
       const input = document.getElementById('url-input');
@@ -1131,15 +1181,13 @@
       if (isPrivateProfile) {
         statusEl.style.display = 'block';
         statusEl.className = 'status-banner status-warning';
-        statusEl.innerHTML = `
-          <div style="font-weight: 600; color: #fff; margin-bottom: 6px; font-size: 14px;">🔒 Private Account Profile Detected</div>
-          <div style="margin-bottom: 10px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
-            Podbean keeps your subscriptions private to your logged-in browser session, which this app cannot see. Sync from inside your Podbean tab instead:
-          </div>
-          <div id="sync-telemetry-status" style="font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
-            💡 <strong>Quickest zero-effort way:</strong> In your Podbean tab, press <code>Ctrl+A</code> then <code>Ctrl+C</code> (Select All & Copy), then click <strong>"Paste Copied Page"</strong> above! All shows will import instantly.
-          </div>
-        `;
+        if (extensionInstalled()) {
+          statusEl.innerHTML = '🔌 Opened your profile in a new tab. The extension is syncing it as the account you are logged in to. Shows appear here when it finishes.';
+          window.open(url.split('#')[0] + '#podrescue=' + encodeURIComponent(location.origin), '_blank');
+          input.value = '';
+        } else {
+          statusEl.innerHTML = '🔒 Podbean keeps your subscriptions private to your logged-in browser, which this app cannot see. <a href="#" onclick="openModal(\'ext-modal\'); return false;">Install the browser extension</a> once and pasting your profile link will work, or use the bookmark button below.';
+        }
         btn.disabled = false;
         btn.textContent = origText;
         return;
