@@ -318,6 +318,25 @@
     }
     .info-strip-icon { color: var(--accent); flex-shrink: 0; }
 
+    .status-banner {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 12.5px;
+      line-height: 1.45;
+      display: none;
+    }
+    .status-warning {
+      background: var(--warning-subtle);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #fbbf24;
+    }
+    .status-success {
+      background: var(--success-subtle);
+      border: 1px solid rgba(39, 197, 120, 0.25);
+      color: #34d399;
+    }
+
     /* Library Workspace & Table */
     .library-panel {
       background: var(--surface-1);
@@ -626,10 +645,11 @@
       <div class="command-row">
         <div class="input-wrapper">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" class="text-input" id="url-input" placeholder="Paste user profile URL (e.g. https://www.podbean.com/user-xxxx/following) or show link">
+          <input type="text" class="text-input" id="url-input" placeholder="Paste public podcast link, RSS feed XML, or profile URL">
         </div>
-        <button class="btn btn-primary" onclick="handleScrapeUrl()">Fetch & Crawl</button>
+        <button class="btn btn-primary" id="btn-scrape-url" onclick="handleScrapeUrl()">Fetch & Ingest</button>
       </div>
+      <div id="url-status-msg" class="status-banner"></div>
 
       <!-- Two-Column Ingestion Workspace -->
       <div class="ingest-grid">
@@ -778,7 +798,7 @@
         title: "Podbean Subscriptions",
         subtitle: "Paginates 36 shows per page. Auto-crawler extracts all pages into a unified list.",
         notice: "Podbean displays 36 subscriptions per page. The sync crawler walks Pages 1, 2, 3... to extract your complete library.",
-        url: "https://www.podbean.com"
+        url: "https://www.podbean.com/site/user/following"
       },
       spotify: {
         title: "Spotify Podcast Library",
@@ -830,29 +850,37 @@
       const script = `javascript:(async function(){
         try {
           var bar = document.createElement('div');
-          bar.style.cssText = 'position:fixed;top:16px;right:16px;z-index:999999;background:#111317;color:#ededef;padding:12px 16px;border-radius:6px;box-shadow:0 12px 30px rgba(0,0,0,0.6);font-family:system-ui,sans-serif;font-size:13px;border:1px solid rgba(255,255,255,0.1);max-width:320px;';
+          bar.style.cssText = 'position:fixed;top:16px;right:16px;z-index:999999;background:#111317;color:#ededef;padding:14px 18px;border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,0.8);font-family:system-ui,-apple-system,sans-serif;font-size:13px;border:1px solid rgba(255,255,255,0.15);max-width:340px;';
           var titleEl = document.createElement('div');
-          titleEl.style.cssText = 'font-weight:600;color:#fff;margin-bottom:4px;';
+          titleEl.style.cssText = 'font-weight:600;color:#fff;margin-bottom:6px;font-size:13.5px;';
           titleEl.textContent = 'Podcast Rescue Sync';
           var statEl = document.createElement('div');
-          statEl.textContent = 'Indexing page...';
+          statEl.textContent = 'Indexing page subscriptions...';
           bar.append(titleEl, statEl);
           document.body.appendChild(bar);
 
           var list = [];
           var seen = {};
+          var noise = {
+            'log in':1, 'login':1, 'sign in':1, 'signin':1, 'sign up':1, 'signup':1,
+            'podbean':1, 'podbean app':1, 'home':1, 'discover':1, 'categories':1,
+            'top podcasts':1, 'about us':1, 'help':1, 'faq':1, 'privacy policy':1,
+            'terms of use':1, 'cookie preferences':1, 'my account':1, 'dashboard':1,
+            'following':1, 'followers':1, 'subscribe':1, 'follow':1, 'listen now':1
+          };
 
           function parseDoc(doc) {
             var hits = 0;
-            var els = doc.querySelectorAll('a, [data-dir-podcast-title], .card-title, h3, h2');
+            var els = doc.querySelectorAll('a.card-title, [data-dir-podcast-title], a[href*="/podcast-detail/"], .pod-item a, .sub-item a');
             els.forEach(function(el){
-              var title = el.getAttribute('data-dir-podcast-title') || el.innerText || '';
-              title = title.trim();
+              var title = el.getAttribute('data-dir-podcast-title') || el.textContent || '';
+              title = title.replace(/\\s+/g, ' ').trim();
               var author = el.getAttribute('data-dir-author') || null;
-              var href = el.getAttribute('href') || '';
-              if (title.length > 2 && title.length < 100 && title.indexOf('\\n') === -1) {
-                var k = title.toLowerCase();
-                if (!seen[k] && (href.indexOf('podcast') !== -1 || href.indexOf('show') !== -1 || el.hasAttribute('data-dir-podcast-title'))) {
+              if (author) author = author.replace(/\\s+/g, ' ').trim();
+              var k = title.toLowerCase();
+
+              if (title.length >= 2 && title.length < 120 && !noise[k] && !k.startsWith('http') && !k.startsWith('<') && !k.startsWith('{')) {
+                if (!seen[k]) {
                   seen[k] = true;
                   list.push({ title: title, author: author, source: '${platform}' });
                   hits++;
@@ -867,8 +895,8 @@
 
           if (window.location.hostname.indexOf('podbean.com') !== -1) {
             var page = 2;
-            while (page <= 25) {
-              statEl.textContent = 'Indexing Page ' + page + ' (' + list.length + ' shows)...';
+            while (page <= 10) {
+              statEl.textContent = 'Crawling Page ' + page + ' (' + list.length + ' shows)...';
               var sep = window.location.href.indexOf('?') !== -1 ? '&' : '?';
               var pUrl = window.location.href.replace(/([?&])page=\\d+/, '') + sep + 'page=' + page;
               try {
@@ -899,7 +927,7 @@
             body: JSON.stringify({ shows: list, source: '${platform}' })
           });
           var data = await res.json();
-          statEl.textContent = 'Synced ' + data.count + ' shows successfully.';
+          statEl.textContent = 'Synced ' + data.count + ' shows successfully!';
           setTimeout(function(){ bar.remove(); }, 3500);
         } catch(err) {
           alert('Sync error: ' + err);
@@ -912,17 +940,41 @@
     // Direct Scrape URL
     async function handleScrapeUrl() {
       const input = document.getElementById('url-input');
+      const btn = document.getElementById('btn-scrape-url');
+      const statusEl = document.getElementById('url-status-msg');
       const url = input.value.trim();
       if (!url) return;
 
-      const resp = await fetch('/api/scrape-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      const data = await resp.json();
-      if (data.shows) {
-        mergeIncomingShows(data.shows);
+      statusEl.style.display = 'none';
+      btn.disabled = true;
+      const origText = btn.textContent;
+      btn.textContent = 'Fetching...';
+
+      try {
+        const resp = await fetch('/api/scrape-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await resp.json();
+        if (resp.ok && data.shows && data.shows.length > 0) {
+          statusEl.style.display = 'block';
+          statusEl.className = 'status-banner status-success';
+          statusEl.textContent = `Extracted ${data.shows.length} podcast subscriptions.`;
+          mergeIncomingShows(data.shows);
+          input.value = '';
+        } else {
+          statusEl.style.display = 'block';
+          statusEl.className = 'status-banner status-warning';
+          statusEl.textContent = data.error || 'No podcast subscriptions found at this URL.';
+        }
+      } catch (err) {
+        statusEl.style.display = 'block';
+        statusEl.className = 'status-banner status-warning';
+        statusEl.textContent = 'Network error while contacting server: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = origText;
       }
     }
 
