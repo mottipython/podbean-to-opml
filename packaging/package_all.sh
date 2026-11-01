@@ -6,7 +6,7 @@ REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DIST_DIR="${REPO_DIR}/dist/packages"
 BIN_SRC="${REPO_DIR}/target/release/podcast-rescue"
 
-VERSION="0.2.0"
+VERSION="0.3.0"
 PKG_NAME="podcast-rescue"
 
 echo "================================================================="
