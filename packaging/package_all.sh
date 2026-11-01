@@ -6,7 +6,7 @@ REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DIST_DIR="${REPO_DIR}/dist/packages"
 BIN_SRC="${REPO_DIR}/target/release/podcast-rescue"
 
-VERSION="0.3.0"
+VERSION="0.4.0"
 PKG_NAME="podcast-rescue"
 
 echo "================================================================="
@@ -81,7 +81,7 @@ install -m 644 ${REPO_DIR}/LICENSE \$RPM_BUILD_ROOT%{_datadir}/doc/%{name}/
 %{_datadir}/doc/%{name}/LICENSE
 
 %changelog
-* Sun Nov 01 2026 Motti Schleider <motti.schleider@gmail.com> - 0.2.0-1
+* Sun Nov 01 2026 Motti Schleider <motti.schleider@gmail.com> - 0.4.0-1
 - Universal cross-platform release with browser GUI and multi-platform support
 EOF
 

@@ -48,7 +48,7 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
         }
 
         if method == "GET" && (url == "/" || url.starts_with("/index")) {
-            let resp = Response::from_string(HTML_UI).with_header(header_html);
+            let resp = Response::from_string(HTML_UI.replace("__VERSION__", env!("CARGO_PKG_VERSION"))).with_header(header_html);
             let _ = request.respond(resp);
             continue;
         }

@@ -17,30 +17,28 @@ This tool extracts your followed podcasts from **Podbean**, **Spotify**, **Apple
 
 Pre-built binaries and native distribution packages are on the [**latest release**](https://github.com/mottipython/podbean-to-opml/releases/latest).
 
-> **Note:** the packages below are v0.3.0 and predate the [browser extension](#-browser-extension-paste-a-profile-link-sync-as-the-logged-in-account) and the sync fixes. To use them now, run from source (`cargo run --release`).
-
 ### 🪟 Windows Packages
 
 | Type | Package | Description |
 | :--- | :--- | :--- |
-| **Windows Installer** | [**`podcast-rescue-windows-x86_64-setup.exe`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-windows-x86_64-setup.exe) | Setup wizard with Start Menu shortcuts, Desktop icon, PATH integration, and uninstaller |
-| **Portable Zip** | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-windows-x86_64.zip) | Standalone portable executable (`podcast-rescue.exe`) |
+| **Windows Installer** | [**`podcast-rescue-windows-x86_64-setup.exe`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-windows-x86_64-setup.exe) | Setup wizard with Start Menu shortcuts, Desktop icon, PATH integration, and uninstaller |
+| **Portable Zip** | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-windows-x86_64.zip) | Standalone portable executable (`podcast-rescue.exe`) |
 
 ### 🐧 Linux Distribution Packages
 
 | Distribution | Package | Install Command |
 | :--- | :--- | :--- |
-| **Fedora / RHEL / CentOS / openSUSE** | [**`.rpm` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-0.3.0-1.fc44.x86_64.rpm) | `sudo dnf install ./podcast-rescue-*.rpm` |
-| **Ubuntu / Debian / Linux Mint / Pop!_OS** | [**`.deb` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue_0.3.0-1_amd64.deb) | `sudo apt install ./podcast-rescue_*.deb` |
-| **Arch Linux / Manjaro / EndeavourOS / SteamOS** | [**`.pkg.tar.zst` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-0.3.0-1-x86_64.pkg.tar.zst) • [**`PKGBUILD`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/PKGBUILD) | `sudo pacman -U ./podcast-rescue-*.pkg.tar.zst` |
+| **Fedora / RHEL / CentOS / openSUSE** | [**`.rpm` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-0.4.0-1.fc44.x86_64.rpm) | `sudo dnf install ./podcast-rescue-*.rpm` |
+| **Ubuntu / Debian / Linux Mint / Pop!_OS** | [**`.deb` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue_0.4.0-1_amd64.deb) | `sudo apt install ./podcast-rescue_*.deb` |
+| **Arch Linux / Manjaro / EndeavourOS / SteamOS** | [**`.pkg.tar.zst` Package**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-0.4.0-1-x86_64.pkg.tar.zst) • [**`PKGBUILD`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/PKGBUILD) | `sudo pacman -U ./podcast-rescue-*.pkg.tar.zst` |
 
 ### 💻 Standalone Portable Binaries
 
 | Operating System | Architecture | Package |
 | :--- | :--- | :--- |
-| **Windows** | x86_64 (64-bit) | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-windows-x86_64.zip) (`.exe`) |
-| **macOS** | Universal (Apple Silicon M1/M2/M3/M4 & Intel) | [**`podcast-rescue-macos-universal.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-macos-universal.tar.gz) |
-| **Linux** | x86_64 | [**`podcast-rescue-linux-x86_64.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.3.0/podcast-rescue-linux-x86_64.tar.gz) |
+| **Windows** | x86_64 (64-bit) | [**`podcast-rescue-windows-x86_64.zip`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-windows-x86_64.zip) (`.exe`) |
+| **macOS** | Universal (Apple Silicon M1/M2/M3/M4 & Intel) | [**`podcast-rescue-macos-universal.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-macos-universal.tar.gz) |
+| **Linux** | x86_64 | [**`podcast-rescue-linux-x86_64.tar.gz`**](https://github.com/mottipython/podbean-to-opml/releases/download/v0.4.0/podcast-rescue-linux-x86_64.tar.gz) |
 
 ---
 
