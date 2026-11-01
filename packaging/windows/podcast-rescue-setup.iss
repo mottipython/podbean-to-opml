@@ -2,7 +2,7 @@
 ; Produces a fully featured Windows Installer (Setup.exe)
 
 #ifndef AppVersion
-#define AppVersion "0.4.0"
+#define AppVersion "0.4.1"
 #endif
 
 [Setup]

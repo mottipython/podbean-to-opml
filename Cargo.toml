@@ -1,6 +1,6 @@
 [package]
 name = "podcast-rescue"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["Motti Schleider <motti.schleider@gmail.com>"]
 description = "Universal cross-platform podcast subscription rescuer and OPML exporter with web walkthrough GUI."
