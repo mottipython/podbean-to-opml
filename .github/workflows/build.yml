@@ -23,7 +23,7 @@ jobs:
           cp target/release/podcast-rescue artifacts/podcast-rescue-linux-x86_64
           chmod +x artifacts/podcast-rescue-linux-x86_64
       - name: Upload Linux Binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: podcast-rescue-linux-x86_64
           path: artifacts/podcast-rescue-linux-x86_64
@@ -51,12 +51,12 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows/podcast-rescue-setup.iss /DAppVersion=0.5.0
           cp dist/packages/podcast-rescue-windows-x86_64-setup.exe artifacts/
       - name: Upload Windows Standalone Binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: podcast-rescue-windows-x86_64.exe
           path: artifacts/podcast-rescue-windows-x86_64.exe
       - name: Upload Windows Installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: podcast-rescue-windows-x86_64-setup.exe
           path: artifacts/podcast-rescue-windows-x86_64-setup.exe
@@ -80,7 +80,7 @@ jobs:
             target/x86_64-apple-darwin/release/podcast-rescue
           chmod +x artifacts/podcast-rescue-macos-universal
       - name: Upload macOS Universal Binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: podcast-rescue-macos-universal
           path: artifacts/podcast-rescue-macos-universal
