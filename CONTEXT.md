@@ -29,3 +29,4 @@ Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked 
 
 ## Standalone extension (2026-11-02)
 `standalone/` = serverless Podbean extension (crawl in content script `crawl.js`, Apple lookup in `resolver.js`, OPML in `opml.js`, UI `app.html/app.js`). Feed liveness check is dropped (needs <all_urls>). Real-account output verified (61 resolved + 9 to pick = 70). Not yet submitted to stores: Chrome Web Store ($5), AMO, Edge; listing text in `standalone/STORE.md`, policy in `PRIVACY.md`. Next: user submits; add Spotify/Apple later only after live testing.
+Store status (2026-11-02): v0.5.0 standalone submitted to Chrome Web Store, Firefox AMO (slug podcast-rescue-podbean, gecko id podcast-rescue-podbean@mottipython.github.io) and Edge Add-ons. Awaiting review. Assets: standalone/store-assets (regen with make.py). GitHub v0.5.0 release still unpublished.
