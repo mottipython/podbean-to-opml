@@ -16,6 +16,7 @@ RUN mkdir src && echo "fn main() {}" > src/main.rs && echo "" > src/lib.rs && ca
 
 # Copy real source code
 COPY src ./src
+COPY extension ./extension
 RUN touch src/lib.rs src/main.rs && cargo build --release
 
 # -------------------------------------------------------------------
