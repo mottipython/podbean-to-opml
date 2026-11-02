@@ -43,6 +43,10 @@ Pre-built binaries and native distribution packages are on the [**latest release
 
 ---
 
+## Standalone browser extension (no app needed)
+
+`standalone/` is a self-contained Chromium and Firefox extension for Podbean: it reads your followed podcasts, looks up their feeds and downloads the OPML, all inside the browser. Build store-ready zips with `standalone/build.sh` (output in `dist/store/`; `dist/store/unpacked` loads directly via "Load unpacked"). Tests: `node standalone/test.mjs`. See [PRIVACY.md](PRIVACY.md) and `standalone/STORE.md`.
+
 ## 🚀 Features
 
 - **Cross-Platform Browser GUI**: Launches a sleek, responsive local web interface that automatically opens in your default browser on **Windows, macOS, and Linux**.

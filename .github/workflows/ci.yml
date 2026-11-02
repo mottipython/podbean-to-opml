@@ -20,6 +20,7 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --release
+      - run: node standalone/test.mjs
 
   docker:
     runs-on: ubuntu-latest

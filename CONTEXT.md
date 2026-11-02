@@ -26,3 +26,6 @@ Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked 
 - Fixed: Docker image did not build since the extension landed (extension/ not copied).
 - Tried and dropped: feed fallback from Podbean show pages. Server fetch gets 403 and an in-tab fetch fails; all 70 test shows resolved via Apple anyway.
 - Not done (needs user or hardware): live sync for Spotify/Apple/YouTube Music, running Windows/macOS builds, Chrome Web Store and Firefox Add-ons listings.
+
+## Standalone extension (2026-11-02)
+`standalone/` = serverless Podbean extension (crawl in content script `crawl.js`, Apple lookup in `resolver.js`, OPML in `opml.js`, UI `app.html/app.js`). Feed liveness check is dropped (needs <all_urls>). Real-account output verified (61 resolved + 9 to pick = 70). Not yet submitted to stores: Chrome Web Store ($5), AMO, Edge; listing text in `standalone/STORE.md`, policy in `PRIVACY.md`. Next: user submits; add Spotify/Apple later only after live testing.

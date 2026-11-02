@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Podcast Rescue for Podbean",
+  "version": "__VERSION__",
+  "description": "Export your followed Podbean podcasts to an OPML file for any podcast app. Everything runs in your browser.",
+  "action": { "default_title": "Podcast Rescue" },
+  "background": { "service_worker": "background.js" },
+  "host_permissions": ["https://*.podbean.com/*", "https://itunes.apple.com/*"],
+  "content_scripts": [{ "matches": ["https://*.podbean.com/*"], "js": ["crawl.js"], "run_at": "document_idle" }],
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
+}

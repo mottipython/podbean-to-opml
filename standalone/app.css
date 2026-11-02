@@ -1,0 +1,24 @@
+:root { --bg:#090a0c; --s1:#111317; --s2:#1d2029; --line:rgba(255,255,255,.1); --text:#ededef; --mute:#8b8e99; --accent:#5e6ad2; --ok:#27c578; --warn:#f59e0b; --bad:#ef4444; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { max-width:1000px; margin:0 auto; padding:32px 20px 64px; }
+h1 { font-size:24px; margin:0 0 6px; } h1 span { color:var(--mute); font-weight:400; }
+.lead,.hint { color:var(--mute); } .hint { font-size:12.5px; margin:8px 0 0; }
+section { background:var(--s1); border:1px solid var(--line); border-radius:10px; padding:18px; margin-top:20px; }
+label { display:block; font-weight:600; margin-bottom:8px; }
+.row { display:flex; gap:8px; flex-wrap:wrap; }
+input { flex:1; min-width:240px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:7px; padding:9px 12px; font:inherit; }
+button,select { background:var(--s2); color:var(--text); border:1px solid var(--line); border-radius:7px; padding:9px 14px; font:inherit; cursor:pointer; }
+button:hover { border-color:rgba(255,255,255,.25); } button:disabled { opacity:.5; cursor:default; }
+button.primary { background:var(--accent); border-color:var(--accent); }
+.status { margin:12px 0 0; padding:9px 12px; border-radius:7px; background:var(--s2); }
+.status.err { color:var(--bad); } .status.ok { color:var(--ok); }
+.bar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+table { width:100%; border-collapse:collapse; }
+th { text-align:left; color:var(--mute); font-weight:500; font-size:12px; padding:6px 8px; }
+td { padding:8px; border-top:1px solid var(--line); vertical-align:middle; }
+td small { display:block; color:var(--mute); word-break:break-all; }
+td select { max-width:100%; padding:6px 8px; }
+.tag { font-size:11.5px; padding:2px 8px; border-radius:99px; white-space:nowrap; }
+.Resolved { background:rgba(39,197,120,.14); color:var(--ok); } .Ambiguous { background:rgba(245,158,11,.14); color:var(--warn); }
+.NotFound { background:rgba(239,68,68,.14); color:var(--bad); } .Pending { background:var(--s2); color:var(--mute); }

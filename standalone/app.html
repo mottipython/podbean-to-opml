@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podcast Rescue for Podbean</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <main>
+    <h1>Podcast Rescue <span>for Podbean</span></h1>
+    <p class="lead">Exports the podcasts you follow on Podbean to an OPML file you can import into any podcast app. Everything runs in this browser. Nothing is sent to us.</p>
+
+    <section>
+      <label for="profile">Your Podbean profile link</label>
+      <div class="row">
+        <input id="profile" type="url" placeholder="https://www.podbean.com/user-xxxxxxxx" autocomplete="off">
+        <button id="sync" class="primary">Sync from Podbean</button>
+      </div>
+      <p class="hint">You must be logged in to Podbean in this browser. Find the link by opening your profile on podbean.com.</p>
+      <p id="status" class="status" hidden></p>
+    </section>
+
+    <section id="results" hidden>
+      <div class="bar">
+        <div id="summary"></div>
+        <div class="row">
+          <button id="accept" hidden>Accept suggested picks</button>
+          <button id="report">Unresolved report</button>
+          <button id="export" class="primary">Download OPML</button>
+          <button id="clear">Start over</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Podbean show</th><th>Matched feed</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
