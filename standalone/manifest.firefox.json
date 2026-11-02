@@ -3,7 +3,7 @@
   "name": "Podcast Rescue for Podbean",
   "version": "__VERSION__",
   "description": "Export your followed Podbean podcasts to an OPML file for any podcast app. Everything runs in your browser.",
-  "browser_specific_settings": { "gecko": { "id": "podcast-rescue-podbean@mottipython.github.io" } },
+  "browser_specific_settings": { "gecko": { "id": "podcast-rescue-podbean@mottipython.github.io", "data_collection_permissions": { "required": ["none"] } } },
   "action": { "default_title": "Podcast Rescue" },
   "background": { "scripts": ["background.js"] },
   "host_permissions": ["https://*.podbean.com/*", "https://itunes.apple.com/*"],
