@@ -48,7 +48,7 @@ jobs:
         shell: pwsh
         run: |
           mkdir -p dist/packages
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows/podcast-rescue-setup.iss /DAppVersion=0.4.1
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows/podcast-rescue-setup.iss /DAppVersion=0.5.0
           cp dist/packages/podcast-rescue-windows-x86_64-setup.exe artifacts/
       - name: Upload Windows Standalone Binary
         uses: actions/upload-artifact@v4

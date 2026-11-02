@@ -10,7 +10,7 @@ Rust crate `podcast-rescue`: exports podcast subscriptions to OPML via a local b
 
 ## Not done
 - Safari has no extension (bookmarklet only).
-- v0.4.1 released (extension, sync fixes, local server hardening, Quit button). Windows/mac builds are untested on real machines this round.
+- v0.5.0 released (extension, sync fixes, local server hardening, Quit button). Windows/mac builds are untested on real machines this round.
 
 ## End-to-end check (2026-11-01)
 Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked by publisher) -> OPML 70 unique feeds. Works in Chrome and Firefox 158.
@@ -19,3 +19,10 @@ Real account: extension sync 70 shows -> resolve 62 exact + 8 ambiguous (picked 
 - Per-run token (`X-Rescue-Token`) required on every `/api/*` call except `/api/auto-ingest`; the served page carries it and wraps `fetch`.
 - `/api/auto-ingest` allows cross-origin POST only from podbean.com, Spotify, Apple Podcasts, YouTube Music (HTTPS).
 - `Host` must be loopback unless bound to a non-loopback host (DNS-rebinding guard); server exits after 5 idle minutes (the open UI polls every 2s, so only an abandoned server idles) or on the header **Quit** button (`POST /api/shutdown`) when loopback-only.
+
+## v0.5.0
+- Security baseline: SECURITY.md, Dependabot (cargo, actions, docker), CI (fmt, clippy -D warnings, tests, Docker build+start), cargo audit, Snyk (needs SNYK_TOKEN repo secret, user-only), weekly fuzz job.
+- Ambiguous shows: suggested pick (publisher match, else Apple's first hit) and an Accept suggested picks bar.
+- Fixed: Docker image did not build since the extension landed (extension/ not copied).
+- Tried and dropped: feed fallback from Podbean show pages. Server fetch gets 403 and an in-tab fetch fails; all 70 test shows resolved via Apple anyway.
+- Not done (needs user or hardware): live sync for Spotify/Apple/YouTube Music, running Windows/macOS builds, Chrome Web Store and Firefox Add-ons listings.
