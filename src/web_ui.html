@@ -721,6 +721,10 @@
       </div>
 
       <!-- Candidate Selection Sheet (if ambiguity occurs) -->
+      <div id="suggest-bar" style="display: none; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 18px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 13px;">
+        <span id="suggest-text"></span>
+        <button class="btn btn-primary" onclick="acceptSuggestions()">Accept suggested picks</button>
+      </div>
       <div id="ambiguity-banner" style="display: none; padding: 12px 18px; background: var(--surface-2); border-bottom: 1px solid var(--border);">
         <div style="font-weight: 600; color: #fbbf24; font-size: 12.5px; margin-bottom: 6px;">Multiple candidate feeds found. Select correct publisher:</div>
         <div id="candidate-list"></div>
@@ -1337,6 +1341,11 @@
       tbody.replaceChildren();
       document.getElementById('total-badge').textContent = `${libraryShows.length} shows`;
 
+      const ambiguous = [...resolvedMap.values()].filter(r => r.status === 'Ambiguous').length;
+      const bar = document.getElementById('suggest-bar');
+      bar.style.display = ambiguous ? 'flex' : 'none';
+      document.getElementById('suggest-text').textContent = `${ambiguous} show${ambiguous === 1 ? ' has' : 's have'} several feeds with the same title. Pick each one, or accept the suggestions (best directory match, or the publisher that matches your account).`;
+
       const filterVal = document.getElementById('filter-input').value.toLowerCase().trim();
 
       libraryShows.forEach((show, idx) => {
@@ -1426,6 +1435,32 @@
       });
     }
 
+    // Apple lists its best match first; a publisher match with the synced author wins over that.
+    function suggestedCandidate(r) {
+      const author = (r.original_author || '').toLowerCase();
+      const byAuthor = author && r.candidates.find(c => {
+        const a = c.artist_name.toLowerCase();
+        return a.includes(author) || author.includes(a);
+      });
+      return byAuthor || r.candidates[0];
+    }
+
+    function chooseCandidate(key, r, c) {
+      r.status = 'Resolved';
+      r.matched_title = c.collection_name;
+      r.feed_url = c.feed_url;
+      r.artist = c.artist_name;
+      resolvedMap.set(key, r);
+    }
+
+    function acceptSuggestions() {
+      resolvedMap.forEach((r, key) => {
+        if (r.status === 'Ambiguous' && r.candidates.length) chooseCandidate(key, r, suggestedCandidate(r));
+      });
+      document.getElementById('ambiguity-banner').style.display = 'none';
+      updateLibraryUI();
+    }
+
     function showCandidatePicker(key, resolveObj) {
       const banner = document.getElementById('ambiguity-banner');
       const list = document.getElementById('candidate-list');
@@ -1435,11 +1470,7 @@
         const btn = document.createElement('button');
         btn.className = 'candidate-card-btn';
         btn.onclick = () => {
-          resolveObj.status = 'Resolved';
-          resolveObj.matched_title = c.collection_name;
-          resolveObj.feed_url = c.feed_url;
-          resolveObj.artist = c.artist_name;
-          resolvedMap.set(key, resolveObj);
+          chooseCandidate(key, resolveObj, c);
           banner.style.display = 'none';
           updateLibraryUI();
         };
@@ -1447,7 +1478,7 @@
         const name = document.createElement('div');
         name.style.fontWeight = '600';
         name.style.color = '#fff';
-        name.textContent = `${c.collection_name} by ${c.artist_name}`;
+        name.textContent = `${c.collection_name} by ${c.artist_name}${c === suggestedCandidate(resolveObj) ? '  (suggested)' : ''}`;
 
         const url = document.createElement('div');
         url.style.fontSize = '11px';
