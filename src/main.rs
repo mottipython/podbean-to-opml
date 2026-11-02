@@ -1,6 +1,7 @@
 use podcast_rescue::browser::open_browser;
 use podcast_rescue::opml::{
-    clean_opml, generate_csv_export, generate_json_export, generate_opml_xml, generate_unresolved_report,
+    clean_opml, generate_csv_export, generate_json_export, generate_opml_xml,
+    generate_unresolved_report,
 };
 use podcast_rescue::parser::parse_content;
 use podcast_rescue::resolver::search_apple_podcasts;
@@ -81,7 +82,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let no_browser = args.iter().any(|a| a == "--no-browser") || host == "0.0.0.0";
-    let url = format!("http://{}:{}", if host == "0.0.0.0" { "localhost" } else { &host }, port);
+    let url = format!(
+        "http://{}:{}",
+        if host == "0.0.0.0" {
+            "localhost"
+        } else {
+            &host
+        },
+        port
+    );
 
     if !no_browser {
         println!("[*] Opening your browser to: {}", url);
@@ -119,7 +128,12 @@ fn run_clean_opml_mode(args: &[String], pos: usize) -> Result<(), Box<dyn std::e
     let resp = clean_opml(&content);
 
     for (idx, item) in resp.items.iter().enumerate() {
-        print!(" [{:02}/{:02}] {} ... ", idx + 1, resp.items.len(), item.title);
+        print!(
+            " [{:02}/{:02}] {} ... ",
+            idx + 1,
+            resp.items.len(),
+            item.title
+        );
         if item.is_alive {
             if item.was_moved {
                 println!("RELOCATED -> {}", item.current_feed_url);
@@ -200,8 +214,18 @@ fn run_cli_mode(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
     println!("[*] Querying Apple Podcasts Directory API for canonical RSS feeds...\n");
 
     for (idx, show) in shows.iter().enumerate() {
-        let author_str = show.author.as_deref().map(|a| format!(" (by {})", a)).unwrap_or_default();
-        print!(" [{:02}/{:02}] Searching: '{}'{}... ", idx + 1, shows.len(), show.title, author_str);
+        let author_str = show
+            .author
+            .as_deref()
+            .map(|a| format!(" (by {})", a))
+            .unwrap_or_default();
+        print!(
+            " [{:02}/{:02}] Searching: '{}'{}... ",
+            idx + 1,
+            shows.len(),
+            show.title,
+            author_str
+        );
 
         let res = search_apple_podcasts(&show.title, show.author.as_deref(), verify_feeds);
         match res.status {
@@ -213,7 +237,10 @@ fn run_cli_mode(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
                     println!("FOUND\n       Feed: {}", feed);
                 }
                 resolved_items.push(ExportItem {
-                    title: res.matched_title.clone().unwrap_or_else(|| show.title.clone()),
+                    title: res
+                        .matched_title
+                        .clone()
+                        .unwrap_or_else(|| show.title.clone()),
                     feed_url: feed,
                 });
             }
@@ -228,7 +255,7 @@ fn run_cli_mode(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let unresolved_count = shows.len() - resolved_items.len();
-    
+
     // Determine export format
     let is_json = format_override.as_deref() == Some("json") || output_file.ends_with(".json");
     let is_csv = format_override.as_deref() == Some("csv") || output_file.ends_with(".csv");

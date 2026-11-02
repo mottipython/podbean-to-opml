@@ -3,8 +3,9 @@
 > **Rescue your podcast subscriptions from walled-garden podcast apps into standard OPML format with an interactive browser GUI.**
 
 [![Release](https://img.shields.io/github/v/release/mottipython/podbean-to-opml?color=10b981&label=Release)](https://github.com/mottipython/podbean-to-opml/releases/latest)
-[![CI Build](https://github.com/mottipython/podbean-to-opml/actions/workflows/build.yml/badge.svg)](https://github.com/mottipython/podbean-to-opml/actions/workflows/build.yml)
-[![Security: Snyk Passed](https://img.shields.io/badge/Security-Snyk%20Passed-blue)](https://snyk.io)
+[![Build](https://github.com/mottipython/podbean-to-opml/actions/workflows/build.yml/badge.svg)](https://github.com/mottipython/podbean-to-opml/actions/workflows/build.yml)
+[![CI](https://github.com/mottipython/podbean-to-opml/actions/workflows/ci.yml/badge.svg)](https://github.com/mottipython/podbean-to-opml/actions/workflows/ci.yml)
+[![Security](https://github.com/mottipython/podbean-to-opml/actions/workflows/security.yml/badge.svg)](SECURITY.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Many major podcast platforms famously lack an **"Export Subscriptions"** or **"Export OPML"** feature—locking your library into their ecosystem and making it frustrating to switch to open, privacy-respecting podcast clients like AntennaPod, Pocket Casts, Overcast, Apple Podcasts, or Castro without manually re-subscribing to every show.

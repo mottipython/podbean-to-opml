@@ -5,17 +5,35 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 
 static RE_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]+>").unwrap());
-static RE_CARD: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<a\b[^>]*class=["'][^"']*\b(?:card-title|title|pod-name|item-title)\b[^"']*["'][^>]*>(.*?)</a>"#).unwrap());
-static RE_DATA: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)data-(?:dir-)?(?:podcast-)?title=["']([^"']+)["'](?:[^>]*data-(?:dir-)?author=["']([^"']+)["'])?"#).unwrap());
-static RE_DETAIL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<a\b([^>]*)href=["'][^"']*/podcast-detail/[^"']*["']([^>]*)>(.*?)</a>"#).unwrap());
-static RE_ATTR_TITLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)\btitle=["']([^"']+)["']"#).unwrap());
-static RE_ATTR_ALT: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)\balt=["']([^"']+)["']"#).unwrap());
-static RE_CHANNEL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<channel\b[^>]*>(.*?)</channel>"#).unwrap());
-static RE_CHANNEL_TITLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<title\b[^>]*>(.*?)</title>"#).unwrap());
-static RE_CHANNEL_AUTHOR: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<itunes:author\b[^>]*>(.*?)</itunes:author>"#).unwrap());
-static RE_SCRIPT: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<script\b[^>]*type=["']application/(?:ld\+)?json["'][^>]*>(.*?)</script>"#).unwrap());
-static RE_META_OG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']"#).unwrap());
-static RE_META_TITLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?is)<title\b[^>]*>(.*?)</title>"#).unwrap());
+static RE_CARD: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?is)<a\b[^>]*class=["'][^"']*\b(?:card-title|title|pod-name|item-title)\b[^"']*["'][^>]*>(.*?)</a>"#).unwrap()
+});
+static RE_DATA: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?is)data-(?:dir-)?(?:podcast-)?title=["']([^"']+)["'](?:[^>]*data-(?:dir-)?author=["']([^"']+)["'])?"#).unwrap()
+});
+static RE_DETAIL: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?is)<a\b([^>]*)href=["'][^"']*/podcast-detail/[^"']*["']([^>]*)>(.*?)</a>"#)
+        .unwrap()
+});
+static RE_ATTR_TITLE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?is)\btitle=["']([^"']+)["']"#).unwrap());
+static RE_ATTR_ALT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?is)\balt=["']([^"']+)["']"#).unwrap());
+static RE_CHANNEL: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?is)<channel\b[^>]*>(.*?)</channel>"#).unwrap());
+static RE_CHANNEL_TITLE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?is)<title\b[^>]*>(.*?)</title>"#).unwrap());
+static RE_CHANNEL_AUTHOR: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?is)<itunes:author\b[^>]*>(.*?)</itunes:author>"#).unwrap());
+static RE_SCRIPT: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?is)<script\b[^>]*type=["']application/(?:ld\+)?json["'][^>]*>(.*?)</script>"#)
+        .unwrap()
+});
+static RE_META_OG: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?is)<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']"#).unwrap()
+});
+static RE_META_TITLE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?is)<title\b[^>]*>(.*?)</title>"#).unwrap());
 
 /// Normalizes show title for deduplication
 fn norm_key(title: &str) -> String {
@@ -65,16 +83,60 @@ pub fn is_ui_noise(title: &str) -> bool {
     }
 
     const NOISE_WORDS: &[&str] = &[
-        "log in", "login", "sign in", "signin", "sign up", "signup",
-        "podbean", "podbean app", "apple podcasts", "spotify", "youtube music",
-        "terms of use", "terms of service", "privacy policy", "cookie preferences",
-        "manage preferences", "cookie policy", "about us", "contact us", "help",
-        "faq", "dashboard", "my account", "home", "search", "browse", "discover",
-        "categories", "top podcasts", "featured podcasts", "popular podcasts",
-        "following", "followers", "settings", "profile", "user profile", "upgrade",
-        "pricing", "download", "podcast app", "listen now", "share", "follow",
-        "unfollow", "subscribe", "unsubscribe", "view all", "see all", "more",
-        "back to top", "close", "cancel", "submit", "save"
+        "log in",
+        "login",
+        "sign in",
+        "signin",
+        "sign up",
+        "signup",
+        "podbean",
+        "podbean app",
+        "apple podcasts",
+        "spotify",
+        "youtube music",
+        "terms of use",
+        "terms of service",
+        "privacy policy",
+        "cookie preferences",
+        "manage preferences",
+        "cookie policy",
+        "about us",
+        "contact us",
+        "help",
+        "faq",
+        "dashboard",
+        "my account",
+        "home",
+        "search",
+        "browse",
+        "discover",
+        "categories",
+        "top podcasts",
+        "featured podcasts",
+        "popular podcasts",
+        "following",
+        "followers",
+        "settings",
+        "profile",
+        "user profile",
+        "upgrade",
+        "pricing",
+        "download",
+        "podcast app",
+        "listen now",
+        "share",
+        "follow",
+        "unfollow",
+        "subscribe",
+        "unsubscribe",
+        "view all",
+        "see all",
+        "more",
+        "back to top",
+        "close",
+        "cancel",
+        "submit",
+        "save",
     ];
 
     NOISE_WORDS.contains(&t)
@@ -91,7 +153,10 @@ pub fn scan_json_universal(val: &Value, platform: &str, map: &mut HashMap<String
                 let k_clean = k.to_lowercase().replace(['_', '-'], "");
                 if let Value::String(s) = v {
                     let s_trimmed = s.trim();
-                    if s_trimmed.len() >= 2 && !s_trimmed.starts_with("http://") && !s_trimmed.starts_with("https://") {
+                    if s_trimmed.len() >= 2
+                        && !s_trimmed.starts_with("http://")
+                        && !s_trimmed.starts_with("https://")
+                    {
                         if k_clean == "title"
                             || k_clean == "podcasttitle"
                             || k_clean == "podcastname"
@@ -118,7 +183,10 @@ pub fn scan_json_universal(val: &Value, platform: &str, map: &mut HashMap<String
                 if let Some(name_val) = obj.get("name") {
                     if let Some(name_str) = name_val.as_str() {
                         // Check if parent or sibling has publisher / uri: "spotify:show:..."
-                        let is_show = obj.get("uri").and_then(|u| u.as_str()).is_some_and(|u| u.starts_with("spotify:show:"))
+                        let is_show = obj
+                            .get("uri")
+                            .and_then(|u| u.as_str())
+                            .is_some_and(|u| u.starts_with("spotify:show:"))
                             || (obj.get("type").and_then(|t| t.as_str()) == Some("show"))
                             || obj.contains_key("publisher");
 
@@ -138,7 +206,11 @@ pub fn scan_json_universal(val: &Value, platform: &str, map: &mut HashMap<String
                 if let Some(runs) = obj.get("runs").and_then(|r| r.as_array()) {
                     if !runs.is_empty() {
                         if let Some(first_text) = runs[0].get("text").and_then(|t| t.as_str()) {
-                            if obj.get("browseId").and_then(|b| b.as_str()).is_some_and(|b| b.starts_with("MPSP")) {
+                            if obj
+                                .get("browseId")
+                                .and_then(|b| b.as_str())
+                                .is_some_and(|b| b.starts_with("MPSP"))
+                            {
                                 title = Some(first_text.trim().to_string());
                             }
                         }
@@ -215,7 +287,10 @@ pub fn scan_html(text: &str, platform: &str, map: &mut HashMap<String, PodcastSh
         // If inner text was empty (e.g. only <img>), check title or alt attribute
         if t.is_empty() {
             let attrs = format!("{} {}", &cap[1], &cap[2]);
-            if let Some(m) = RE_ATTR_TITLE.captures(&attrs).or_else(|| RE_ATTR_TITLE.captures(&cap[3])) {
+            if let Some(m) = RE_ATTR_TITLE
+                .captures(&attrs)
+                .or_else(|| RE_ATTR_TITLE.captures(&cap[3]))
+            {
                 t = strip_html_tags(&m[1]);
             } else if let Some(m) = RE_ATTR_ALT.captures(&cap[3]) {
                 t = strip_html_tags(&m[1]);
@@ -235,8 +310,12 @@ pub fn scan_html(text: &str, platform: &str, map: &mut HashMap<String, PodcastSh
     if text.contains("<rss") || text.contains("<feed") || text.contains("<channel") {
         for cap in RE_CHANNEL.captures_iter(text) {
             let ch = &cap[1];
-            let title = RE_CHANNEL_TITLE.captures(ch).map(|c| strip_html_tags(&c[1]));
-            let author = RE_CHANNEL_AUTHOR.captures(ch).map(|c| strip_html_tags(&c[1]));
+            let title = RE_CHANNEL_TITLE
+                .captures(ch)
+                .map(|c| strip_html_tags(&c[1]));
+            let author = RE_CHANNEL_AUTHOR
+                .captures(ch)
+                .map(|c| strip_html_tags(&c[1]));
             if let Some(t) = title {
                 if !t.is_empty() && !is_ui_noise(&t) {
                     let key = norm_key(&t);
@@ -299,18 +378,27 @@ pub fn parse_content(raw: &str, platform_hint: Option<&str>) -> Vec<PodcastShow>
         // If it's a HAR file, extract network response contents
         if let Some(entries) = json_val.pointer("/log/entries").and_then(|e| e.as_array()) {
             for entry in entries {
-                if let Some(content_text) = entry.pointer("/response/content/text").and_then(|t| t.as_str()) {
+                if let Some(content_text) = entry
+                    .pointer("/response/content/text")
+                    .and_then(|t| t.as_str())
+                {
                     let mime = entry
                         .pointer("/response/content/mimeType")
                         .and_then(|m| m.as_str())
                         .unwrap_or("")
                         .to_lowercase();
 
-                    if mime.contains("json") || content_text.trim().starts_with('{') || content_text.trim().starts_with('[') {
+                    if mime.contains("json")
+                        || content_text.trim().starts_with('{')
+                        || content_text.trim().starts_with('[')
+                    {
                         if let Ok(sub_json) = serde_json::from_str::<Value>(content_text) {
                             scan_json_universal(&sub_json, platform, &mut shows_map);
                         }
-                    } else if mime.contains("html") || content_text.contains("<a ") || content_text.contains("<div ") {
+                    } else if mime.contains("html")
+                        || content_text.contains("<a ")
+                        || content_text.contains("<div ")
+                    {
                         scan_html(content_text, platform, &mut shows_map);
                     }
                 }
@@ -343,9 +431,15 @@ pub fn parse_content(raw: &str, platform_hint: Option<&str>) -> Vec<PodcastShow>
 
             // Check for "Show Title by Author" or "Show Title - Author" format
             let (title, author) = if let Some(idx) = l_trimmed.rfind(" by ") {
-                (l_trimmed[..idx].trim(), Some(l_trimmed[idx + 4..].trim().to_string()))
+                (
+                    l_trimmed[..idx].trim(),
+                    Some(l_trimmed[idx + 4..].trim().to_string()),
+                )
             } else if let Some(idx) = l_trimmed.find(" - ") {
-                (l_trimmed[..idx].trim(), Some(l_trimmed[idx + 3..].trim().to_string()))
+                (
+                    l_trimmed[..idx].trim(),
+                    Some(l_trimmed[idx + 3..].trim().to_string()),
+                )
             } else {
                 (l_trimmed, None)
             };
@@ -385,7 +479,10 @@ pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
         .map_err(|e| format!("Failed to fetch URL '{}': {}", clean_url, e))?;
 
     let final_url = resp.get_url().to_string();
-    if final_url.contains("/login") || final_url.contains("/signin") || final_url.contains("user/login") {
+    if final_url.contains("/login")
+        || final_url.contains("/signin")
+        || final_url.contains("user/login")
+    {
         return Err("Podbean requires you to be logged into your account to view your subscriptions. Headless servers cannot access private accounts without your login cookies. Please use the '1-Click Browser Sync' bookmarklet on your Podbean page to transfer your subscriptions, or drop the saved page HTML here.".to_string());
     }
 
@@ -455,7 +552,13 @@ pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
 
         if let Some(mut title) = extracted_title {
             title = strip_html_tags(&title);
-            for suffix in &[" | Podbean", " - Podbean", " - Spotify", " on Apple Podcasts", " - YouTube"] {
+            for suffix in &[
+                " | Podbean",
+                " - Podbean",
+                " - Spotify",
+                " on Apple Podcasts",
+                " - YouTube",
+            ] {
                 if let Some(idx) = title.find(suffix) {
                     title = title[..idx].trim().to_string();
                 }
@@ -547,7 +650,10 @@ mod tests {
 </body>
 </html>"#;
         let shows = parse_content(dummy_html, Some("Podbean"));
-        assert!(shows.is_empty(), "HTML without shows should return empty, not parse HTML tags as podcasts!");
+        assert!(
+            shows.is_empty(),
+            "HTML without shows should return empty, not parse HTML tags as podcasts!"
+        );
     }
 
     #[test]

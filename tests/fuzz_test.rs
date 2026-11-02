@@ -36,10 +36,26 @@ impl FuzzRng {
     fn random_unicode_string(&mut self, max_chars: usize) -> String {
         let count = (self.next_u32() as usize % max_chars) + 1;
         let unicode_samples = [
-            "🎙️", "🎧", "The Daily", "Focus & Co.", "📻", "<script>alert(1)</script>",
-            "&amp;&quot;&#39;", "\u{202E}RTL_OVERRIDE", "null", "undefined",
-            "{}", "[]", "\"title\": null", "{\"a\": 1}", "<!-- XML comment -->",
-            "<![CDATA[test]]>", "   ", "\r\n\t", "\u{0000}", "\u{FFFD}",
+            "🎙️",
+            "🎧",
+            "The Daily",
+            "Focus & Co.",
+            "📻",
+            "<script>alert(1)</script>",
+            "&amp;&quot;&#39;",
+            "\u{202E}RTL_OVERRIDE",
+            "null",
+            "undefined",
+            "{}",
+            "[]",
+            "\"title\": null",
+            "{\"a\": 1}",
+            "<!-- XML comment -->",
+            "<![CDATA[test]]>",
+            "   ",
+            "\r\n\t",
+            "\u{0000}",
+            "\u{FFFD}",
         ];
         let mut s = String::new();
         for _ in 0..count {
@@ -53,7 +69,14 @@ impl FuzzRng {
 #[test]
 fn test_fuzz_parser_no_panics() {
     let mut rng = FuzzRng::new(0x1337BEEF);
-    let platforms = [None, Some("Podbean"), Some("Spotify"), Some("Apple"), Some("YouTube"), Some("Universal")];
+    let platforms = [
+        None,
+        Some("Podbean"),
+        Some("Spotify"),
+        Some("Apple"),
+        Some("YouTube"),
+        Some("Universal"),
+    ];
 
     for iteration in 0..10_000 {
         let platform = platforms[(rng.next_u32() as usize) % platforms.len()];
@@ -66,18 +89,23 @@ fn test_fuzz_parser_no_panics() {
                 // Synthetic mutated JSON / HAR
                 format!(
                     r#"{{"log": {{"entries": [{{"response": {{"content": {{"text": "{}"}}}}}}]}}}}"#,
-                    rng.random_string(200).replace('\\', "\\\\").replace('"', "\\\"")
+                    rng.random_string(200)
+                        .replace('\\', "\\\\")
+                        .replace('"', "\\\"")
                 )
             }
             _ => {
                 // Line-based input with weird delimiters
-                format!("{}\n{}\n{}", rng.random_string(100), rng.random_unicode_string(10), rng.random_string(50))
+                format!(
+                    "{}\n{}\n{}",
+                    rng.random_string(100),
+                    rng.random_unicode_string(10),
+                    rng.random_string(50)
+                )
             }
         };
 
-        let result = catch_unwind(AssertUnwindSafe(|| {
-            parse_content(&input, platform)
-        }));
+        let result = catch_unwind(AssertUnwindSafe(|| parse_content(&input, platform)));
 
         assert!(
             result.is_ok(),
@@ -96,15 +124,19 @@ fn test_fuzz_resolver_matching_no_panics() {
         let a = rng.random_string(200);
         let b = rng.random_string(200);
 
-        let res_norm = catch_unwind(AssertUnwindSafe(|| {
-            normalize_title(&a)
-        }));
-        assert!(res_norm.is_ok(), "normalize_title panicked on iteration {}", iteration);
+        let res_norm = catch_unwind(AssertUnwindSafe(|| normalize_title(&a)));
+        assert!(
+            res_norm.is_ok(),
+            "normalize_title panicked on iteration {}",
+            iteration
+        );
 
-        let res_match = catch_unwind(AssertUnwindSafe(|| {
-            authors_match(&a, &b)
-        }));
-        assert!(res_match.is_ok(), "authors_match panicked on iteration {}", iteration);
+        let res_match = catch_unwind(AssertUnwindSafe(|| authors_match(&a, &b)));
+        assert!(
+            res_match.is_ok(),
+            "authors_match panicked on iteration {}",
+            iteration
+        );
     }
 }
 
@@ -127,9 +159,21 @@ fn test_fuzz_opml_xml_integrity() {
         let xml = generate_opml_xml(&items, unresolved);
 
         // Ensure output is non-empty and well-formed root tag
-        assert!(xml.starts_with("<?xml"), "Iter {}: XML missing header", iteration);
-        assert!(xml.contains("<opml version=\"1.0\">"), "Iter {}: missing opml tag", iteration);
-        assert!(xml.contains("</opml>"), "Iter {}: missing closing tag", iteration);
+        assert!(
+            xml.starts_with("<?xml"),
+            "Iter {}: XML missing header",
+            iteration
+        );
+        assert!(
+            xml.contains("<opml version=\"1.0\">"),
+            "Iter {}: missing opml tag",
+            iteration
+        );
+        assert!(
+            xml.contains("</opml>"),
+            "Iter {}: missing closing tag",
+            iteration
+        );
 
         // Ensure dangerous raw XML characters in titles are escaped
         for item in &items {
@@ -178,6 +222,10 @@ fn test_fuzz_opml_parser_no_panics() {
         };
 
         let result = catch_unwind(AssertUnwindSafe(|| parse_opml_feeds(&arbitrary_xml)));
-        assert!(result.is_ok(), "parse_opml_feeds panicked on iteration {}", iteration);
+        assert!(
+            result.is_ok(),
+            "parse_opml_feeds panicked on iteration {}",
+            iteration
+        );
     }
 }

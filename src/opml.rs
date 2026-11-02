@@ -1,4 +1,6 @@
-use crate::types::{CleanOpmlItemResult, CleanOpmlResponse, ExportItem, ResolveResult, ResolveStatus};
+use crate::types::{
+    CleanOpmlItemResult, CleanOpmlResponse, ExportItem, ResolveResult, ResolveStatus,
+};
 use regex::Regex;
 
 pub fn generate_opml_xml(items: &[ExportItem], unresolved_count: usize) -> String {
@@ -39,11 +41,21 @@ pub fn generate_opml_xml(items: &[ExportItem], unresolved_count: usize) -> Strin
 pub fn generate_unresolved_report(results: &[ResolveResult]) -> String {
     let mut report = String::new();
     report.push_str("# Podcast Rescue - Unresolved Subscriptions Report\n");
-    report.push_str("# This report contains shows that could not be automatically resolved with certainty.\n");
-    report.push_str("# Review candidate feeds below to manually add them to your podcast client.\n\n");
+    report.push_str(
+        "# This report contains shows that could not be automatically resolved with certainty.\n",
+    );
+    report.push_str(
+        "# Review candidate feeds below to manually add them to your podcast client.\n\n",
+    );
 
-    let ambiguous: Vec<&ResolveResult> = results.iter().filter(|r| r.status == ResolveStatus::Ambiguous).collect();
-    let not_found: Vec<&ResolveResult> = results.iter().filter(|r| r.status == ResolveStatus::NotFound).collect();
+    let ambiguous: Vec<&ResolveResult> = results
+        .iter()
+        .filter(|r| r.status == ResolveStatus::Ambiguous)
+        .collect();
+    let not_found: Vec<&ResolveResult> = results
+        .iter()
+        .filter(|r| r.status == ResolveStatus::NotFound)
+        .collect();
 
     if !ambiguous.is_empty() {
         report.push_str("=================================================================\n");
@@ -52,11 +64,19 @@ pub fn generate_unresolved_report(results: &[ResolveResult]) -> String {
 
         for r in ambiguous {
             report.push_str(&format!("Show Title: {}\n", r.original_title));
-            report.push_str(&format!("Publisher:  {}\n", r.original_author.as_deref().unwrap_or("Not specified")));
+            report.push_str(&format!(
+                "Publisher:  {}\n",
+                r.original_author.as_deref().unwrap_or("Not specified")
+            ));
             report.push_str(&format!("Reason:     {}\n", r.reason));
             report.push_str("Candidate Feeds in Directory:\n");
             for (idx, c) in r.candidates.iter().enumerate() {
-                report.push_str(&format!("  [{}] {} (by {})\n", idx + 1, c.collection_name, c.artist_name));
+                report.push_str(&format!(
+                    "  [{}] {} (by {})\n",
+                    idx + 1,
+                    c.collection_name,
+                    c.artist_name
+                ));
                 report.push_str(&format!("      Feed: {}\n", c.feed_url));
             }
             report.push_str("\n----------------------------------------\n\n");
@@ -70,7 +90,10 @@ pub fn generate_unresolved_report(results: &[ResolveResult]) -> String {
 
         for r in not_found {
             report.push_str(&format!("Show Title: {}\n", r.original_title));
-            report.push_str(&format!("Publisher:  {}\n", r.original_author.as_deref().unwrap_or("Not specified")));
+            report.push_str(&format!(
+                "Publisher:  {}\n",
+                r.original_author.as_deref().unwrap_or("Not specified")
+            ));
             report.push_str(&format!("Status:     {}\n", r.reason));
             report.push_str("Note:       May be exclusive to the platform, private, or removed from Apple Podcasts.\n\n");
         }

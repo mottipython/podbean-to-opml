@@ -9,9 +9,19 @@ use std::time::Duration;
 pub fn normalize_title(title: &str) -> String {
     let cleaned: String = title
         .chars()
-        .map(|c| if c.is_alphanumeric() || c.is_whitespace() { c } else { ' ' })
+        .map(|c| {
+            if c.is_alphanumeric() || c.is_whitespace() {
+                c
+            } else {
+                ' '
+            }
+        })
         .collect();
-    cleaned.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase()
+    cleaned
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
 }
 
 /// Checks if two author / publisher names match or have significant overlap
@@ -27,33 +37,74 @@ pub fn authors_match(author_a: &str, author_b: &str) -> bool {
 
     let clean_a: String = a
         .chars()
-        .map(|c| if c.is_alphanumeric() || c.is_whitespace() { c } else { ' ' })
+        .map(|c| {
+            if c.is_alphanumeric() || c.is_whitespace() {
+                c
+            } else {
+                ' '
+            }
+        })
         .collect();
     let clean_b: String = b
         .chars()
-        .map(|c| if c.is_alphanumeric() || c.is_whitespace() { c } else { ' ' })
+        .map(|c| {
+            if c.is_alphanumeric() || c.is_whitespace() {
+                c
+            } else {
+                ' '
+            }
+        })
         .collect();
 
     let clean_a_trim = clean_a.split_whitespace().collect::<Vec<_>>().join(" ");
     let clean_b_trim = clean_b.split_whitespace().collect::<Vec<_>>().join(" ");
 
-    if clean_a_trim == clean_b_trim || clean_a_trim.contains(&clean_b_trim) || clean_b_trim.contains(&clean_a_trim) {
+    if clean_a_trim == clean_b_trim
+        || clean_a_trim.contains(&clean_b_trim)
+        || clean_b_trim.contains(&clean_a_trim)
+    {
         return true;
     }
 
     let stop_words: HashSet<&str> = [
-        "the", "a", "an", "and", "&", "inc", "llc", "ltd", "corp", "corporation",
-        "media", "studios", "studio", "productions", "production", "network",
-        "podcast", "podcasts", "group", "radio",
+        "the",
+        "a",
+        "an",
+        "and",
+        "&",
+        "inc",
+        "llc",
+        "ltd",
+        "corp",
+        "corporation",
+        "media",
+        "studios",
+        "studio",
+        "productions",
+        "production",
+        "network",
+        "podcast",
+        "podcasts",
+        "group",
+        "radio",
     ]
     .iter()
     .copied()
     .collect();
 
-    let words_a: HashSet<&str> = clean_a_trim.split_whitespace().filter(|w| !stop_words.contains(w)).collect();
-    let words_b: HashSet<&str> = clean_b_trim.split_whitespace().filter(|w| !stop_words.contains(w)).collect();
+    let words_a: HashSet<&str> = clean_a_trim
+        .split_whitespace()
+        .filter(|w| !stop_words.contains(w))
+        .collect();
+    let words_b: HashSet<&str> = clean_b_trim
+        .split_whitespace()
+        .filter(|w| !stop_words.contains(w))
+        .collect();
 
-    if !words_a.is_empty() && !words_b.is_empty() && (words_a.is_subset(&words_b) || words_b.is_subset(&words_a)) {
+    if !words_a.is_empty()
+        && !words_b.is_empty()
+        && (words_a.is_subset(&words_b) || words_b.is_subset(&words_a))
+    {
         return true;
     }
 
@@ -77,8 +128,13 @@ pub fn verify_feed_status(feed_url: &str) -> (String, bool, Option<String>) {
             let n = std::io::Read::read(&mut reader, &mut buf).unwrap_or(0);
             let snippet = String::from_utf8_lossy(&buf[..n]);
 
-            let re_new_feed = Regex::new(r"(?i)<itunes:new-feed-url>\s*(https?://[^\s<]+)\s*</itunes:new-feed-url>").unwrap();
-            let new_feed = re_new_feed.captures(&snippet).map(|c| c[1].trim().to_string());
+            let re_new_feed = Regex::new(
+                r"(?i)<itunes:new-feed-url>\s*(https?://[^\s<]+)\s*</itunes:new-feed-url>",
+            )
+            .unwrap();
+            let new_feed = re_new_feed
+                .captures(&snippet)
+                .map(|c| c[1].trim().to_string());
 
             let effective_url = new_feed.unwrap_or(final_url);
             let moved = effective_url.trim_end_matches('/') != feed_url.trim_end_matches('/');
@@ -89,7 +145,11 @@ pub fn verify_feed_status(feed_url: &str) -> (String, bool, Option<String>) {
 }
 
 /// Queries Apple Podcasts Search API to resolve a show title and publisher.
-pub fn search_apple_podcasts(title: &str, author: Option<&str>, verify_feed: bool) -> ResolveResult {
+pub fn search_apple_podcasts(
+    title: &str,
+    author: Option<&str>,
+    verify_feed: bool,
+) -> ResolveResult {
     let encoded_term = utf8_percent_encode(title, NON_ALPHANUMERIC).to_string();
     let url = format!(
         "https://itunes.apple.com/search?media=podcast&entity=podcast&term={}&limit=8",
@@ -138,14 +198,23 @@ pub fn search_apple_podcasts(title: &str, author: Option<&str>, verify_feed: boo
     };
 
     let empty_vec = Vec::new();
-    let raw_results = payload.get("results").and_then(|r| r.as_array()).unwrap_or(&empty_vec);
+    let raw_results = payload
+        .get("results")
+        .and_then(|r| r.as_array())
+        .unwrap_or(&empty_vec);
 
     let mut valid_candidates = Vec::new();
     for res in raw_results {
         if let Some(feed) = res.get("feedUrl").and_then(|f| f.as_str()) {
-            let col_name = res.get("collectionName").and_then(|c| c.as_str()).unwrap_or(title);
+            let col_name = res
+                .get("collectionName")
+                .and_then(|c| c.as_str())
+                .unwrap_or(title);
             let artist_name = res.get("artistName").and_then(|a| a.as_str()).unwrap_or("");
-            let artwork = res.get("artworkUrl100").and_then(|a| a.as_str()).map(ToString::to_string);
+            let artwork = res
+                .get("artworkUrl100")
+                .and_then(|a| a.as_str())
+                .map(ToString::to_string);
 
             valid_candidates.push(Candidate {
                 collection_name: col_name.to_string(),

@@ -22,10 +22,22 @@ pub fn detect_browsers() -> Vec<BrowserInfo> {
 
     #[cfg(target_os = "macos")]
     let candidates = [
-        ("Google Chrome", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
-        ("Microsoft Edge", "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"),
-        ("Brave", "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"),
-        ("Firefox", "/Applications/Firefox.app/Contents/MacOS/firefox"),
+        (
+            "Google Chrome",
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        ),
+        (
+            "Microsoft Edge",
+            "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+        ),
+        (
+            "Brave",
+            "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+        ),
+        (
+            "Firefox",
+            "/Applications/Firefox.app/Contents/MacOS/firefox",
+        ),
     ];
 
     #[cfg(target_os = "linux")]
@@ -89,10 +101,7 @@ pub fn open_browser(url: &str) -> bool {
 
     #[cfg(target_os = "macos")]
     {
-        Command::new("open")
-            .arg(url)
-            .spawn()
-            .is_ok()
+        Command::new("open").arg(url).spawn().is_ok()
     }
 
     #[cfg(target_os = "linux")]
@@ -102,11 +111,16 @@ pub fn open_browser(url: &str) -> bool {
         }
 
         // Fallbacks if xdg-open is not found
-        for browser in ["microsoft-edge", "google-chrome", "chromium", "firefox", "brave-browser"] {
-            if is_executable_available(browser)
-                && Command::new(browser).arg(url).spawn().is_ok() {
-                    return true;
-                }
+        for browser in [
+            "microsoft-edge",
+            "google-chrome",
+            "chromium",
+            "firefox",
+            "brave-browser",
+        ] {
+            if is_executable_available(browser) && Command::new(browser).arg(url).spawn().is_ok() {
+                return true;
+            }
         }
         false
     }
@@ -122,7 +136,10 @@ pub fn launch_automated_browser(target_url: &str, port: u16) -> Option<std::proc
     })?;
 
     let debug_flag = format!("--remote-debugging-port={}", port);
-    let user_data = format!("--user-data-dir={}/.podcast_rescue_profile", std::env::temp_dir().display());
+    let user_data = format!(
+        "--user-data-dir={}/.podcast_rescue_profile",
+        std::env::temp_dir().display()
+    );
 
     Command::new(&chromium_browser.executable)
         .arg(&debug_flag)

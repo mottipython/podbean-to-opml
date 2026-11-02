@@ -21,7 +21,11 @@ fn crc32(data: &[u8]) -> u32 {
     for &b in data {
         crc ^= b as u32;
         for _ in 0..8 {
-            crc = if crc & 1 == 1 { (crc >> 1) ^ 0xEDB8_8320 } else { crc >> 1 };
+            crc = if crc & 1 == 1 {
+                (crc >> 1) ^ 0xEDB8_8320
+            } else {
+                crc >> 1
+            };
         }
     }
     !crc
@@ -29,7 +33,11 @@ fn crc32(data: &[u8]) -> u32 {
 
 /// Chromium browsers (Chrome, Edge, Brave, Opera, Vivaldi) take the MV3 manifest; Firefox needs MV2 so site access is granted at install.
 pub fn extension_zip(firefox: bool) -> Vec<u8> {
-    let manifest = if firefox { FIREFOX_MANIFEST } else { CHROMIUM_MANIFEST };
+    let manifest = if firefox {
+        FIREFOX_MANIFEST
+    } else {
+        CHROMIUM_MANIFEST
+    };
     let text = std::iter::once(("manifest.json", manifest)).chain(SCRIPTS);
     let files: Vec<(&str, Vec<u8>)> = text
         .map(|(name, body)| (name, body.replace("__VERSION__", VERSION).into_bytes()))

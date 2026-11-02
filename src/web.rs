@@ -1,11 +1,12 @@
 use crate::opml::{
-    clean_opml, generate_csv_export, generate_json_export, generate_opml_xml, generate_unresolved_report,
+    clean_opml, generate_csv_export, generate_json_export, generate_opml_xml,
+    generate_unresolved_report,
 };
 use crate::parser::{parse_content, scrape_url};
 use crate::resolver::search_apple_podcasts;
 use crate::types::{
-    AutoIngestRequest, CleanOpmlRequest, ExportOpmlRequest, ParseRequest, PodcastShow, ResolveRequest,
-    ResolveResult, ScrapeUrlRequest,
+    AutoIngestRequest, CleanOpmlRequest, ExportOpmlRequest, ParseRequest, PodcastShow,
+    ResolveRequest, ResolveResult, ScrapeUrlRequest,
 };
 use std::collections::hash_map::RandomState;
 use std::hash::{BuildHasher, Hasher};
@@ -25,7 +26,10 @@ fn origin_allowed(origin: &str) -> bool {
     origin.starts_with("https://")
         && (host == "podbean.com"
             || host.ends_with(".podbean.com")
-            || matches!(host, "open.spotify.com" | "podcasts.apple.com" | "music.youtube.com"))
+            || matches!(
+                host,
+                "open.spotify.com" | "podcasts.apple.com" | "music.youtube.com"
+            ))
 }
 
 fn host_is_local(host: &str) -> bool {
@@ -65,7 +69,10 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
 
     let display_host = if host == "0.0.0.0" { "localhost" } else { host };
     println!("=================================================================");
-    println!(" 🚀 Podcast Rescue Cockpit running at http://{}:{}", display_host, port);
+    println!(
+        " 🚀 Podcast Rescue Cockpit running at http://{}:{}",
+        display_host, port
+    );
     println!(" Open this URL in your web browser if it did not open automatically.");
     println!(" Press Ctrl+C in terminal to stop.");
     println!("=================================================================");
@@ -86,29 +93,46 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
         let origin = request_header(&request, "Origin");
         let is_ingest = url == "/api/auto-ingest";
 
-        let header_html = Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap();
-        let header_json = Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap();
-        let header_xml = Header::from_bytes(&b"Content-Type"[..], &b"text/xml; charset=utf-8"[..]).unwrap();
-        let header_text = Header::from_bytes(&b"Content-Type"[..], &b"text/plain; charset=utf-8"[..]).unwrap();
-        let header_csv = Header::from_bytes(&b"Content-Type"[..], &b"text/csv; charset=utf-8"[..]).unwrap();
+        let header_html =
+            Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap();
+        let header_json =
+            Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap();
+        let header_xml =
+            Header::from_bytes(&b"Content-Type"[..], &b"text/xml; charset=utf-8"[..]).unwrap();
+        let header_text =
+            Header::from_bytes(&b"Content-Type"[..], &b"text/plain; charset=utf-8"[..]).unwrap();
+        let header_csv =
+            Header::from_bytes(&b"Content-Type"[..], &b"text/csv; charset=utf-8"[..]).unwrap();
         // Cross-origin access only for the sync endpoint, and only from known podcast sites.
         let header_cors = if is_ingest && origin_allowed(&origin) {
             Header::from_bytes(&b"Access-Control-Allow-Origin"[..], origin.as_bytes()).unwrap()
         } else {
             Header::from_bytes(&b"Vary"[..], &b"Origin"[..]).unwrap()
         };
-        let header_cors_methods = Header::from_bytes(&b"Access-Control-Allow-Methods"[..], &b"GET, POST, OPTIONS"[..]).unwrap();
-        let header_cors_headers = Header::from_bytes(&b"Access-Control-Allow-Headers"[..], &b"Content-Type, X-Rescue-Token"[..]).unwrap();
+        let header_cors_methods = Header::from_bytes(
+            &b"Access-Control-Allow-Methods"[..],
+            &b"GET, POST, OPTIONS"[..],
+        )
+        .unwrap();
+        let header_cors_headers = Header::from_bytes(
+            &b"Access-Control-Allow-Headers"[..],
+            &b"Content-Type, X-Rescue-Token"[..],
+        )
+        .unwrap();
 
         let forbidden = |request: tiny_http::Request| {
-            let _ = request.respond(Response::from_string("{\"error\": \"Forbidden\"}").with_status_code(403));
+            let _ = request
+                .respond(Response::from_string("{\"error\": \"Forbidden\"}").with_status_code(403));
         };
         // Blocks DNS rebinding: a rebound hostname never matches a loopback Host.
         if loopback_only && !host_is_local(&request_header(&request, "Host")) {
             forbidden(request);
             continue;
         }
-        if url.starts_with("/api/") && !is_ingest && request_header(&request, "X-Rescue-Token") != token {
+        if url.starts_with("/api/")
+            && !is_ingest
+            && request_header(&request, "X-Rescue-Token") != token
+        {
             forbidden(request);
             continue;
         }
@@ -123,22 +147,38 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
         }
 
         if method == "GET" && (url == "/" || url.starts_with("/index")) {
-            let resp = Response::from_string(HTML_UI.replace("__VERSION__", env!("CARGO_PKG_VERSION")).replace("__TOKEN__", &token)).with_header(header_html);
+            let resp = Response::from_string(
+                HTML_UI
+                    .replace("__VERSION__", env!("CARGO_PKG_VERSION"))
+                    .replace("__TOKEN__", &token),
+            )
+            .with_header(header_html);
             let _ = request.respond(resp);
             continue;
         }
 
         if method == "POST" && url == "/api/shutdown" {
-            let _ = request.respond(Response::from_string("{\"status\":\"stopping\"}").with_header(header_json));
+            let _ = request.respond(
+                Response::from_string("{\"status\":\"stopping\"}").with_header(header_json),
+            );
             println!("Quit requested, shutting down.");
             break;
         }
 
-        if method == "GET" && (url == "/podcast-rescue-extension.zip" || url == "/podcast-rescue-extension-firefox.zip") {
+        if method == "GET"
+            && (url == "/podcast-rescue-extension.zip"
+                || url == "/podcast-rescue-extension-firefox.zip")
+        {
             let firefox = url.contains("firefox");
-            let name = if firefox { "podcast-rescue-extension-firefox.zip" } else { "podcast-rescue-extension.zip" };
+            let name = if firefox {
+                "podcast-rescue-extension-firefox.zip"
+            } else {
+                "podcast-rescue-extension.zip"
+            };
             let resp = Response::from_data(crate::extension::extension_zip(firefox))
-                .with_header(Header::from_bytes(&b"Content-Type"[..], &b"application/zip"[..]).unwrap())
+                .with_header(
+                    Header::from_bytes(&b"Content-Type"[..], &b"application/zip"[..]).unwrap(),
+                )
                 .with_header(
                     Header::from_bytes(
                         &b"Content-Disposition"[..],
@@ -184,7 +224,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -204,7 +246,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -238,7 +282,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     }
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -250,7 +296,8 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     let mut results = Vec::new();
 
                     for show in req.shows {
-                        let res = search_apple_podcasts(&show.title, show.author.as_deref(), verify);
+                        let res =
+                            search_apple_podcasts(&show.title, show.author.as_deref(), verify);
                         results.push(res);
                     }
 
@@ -265,7 +312,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -281,7 +330,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -297,7 +348,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -313,7 +366,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -330,7 +385,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -346,7 +403,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     continue;
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
@@ -357,11 +416,15 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     if let Some(target_url) = json.get("url").and_then(|u| u.as_str()) {
                         if target_url.starts_with("http://") || target_url.starts_with("https://") {
                             #[cfg(target_os = "windows")]
-                            let _ = std::process::Command::new("cmd").args(["/C", "start", "", target_url]).spawn();
+                            let _ = std::process::Command::new("cmd")
+                                .args(["/C", "start", "", target_url])
+                                .spawn();
                             #[cfg(target_os = "macos")]
                             let _ = std::process::Command::new("open").arg(target_url).spawn();
                             #[cfg(target_os = "linux")]
-                            let _ = std::process::Command::new("xdg-open").arg(target_url).spawn();
+                            let _ = std::process::Command::new("xdg-open")
+                                .arg(target_url)
+                                .spawn();
 
                             let resp = Response::from_string("{\"status\":\"ok\"}")
                                 .with_header(header_json)
@@ -372,7 +435,9 @@ pub fn run_web_server(host: &str, port: u16) -> Result<(), Box<dyn std::error::E
                     }
                 }
             }
-            let _ = request.respond(Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400));
+            let _ = request.respond(
+                Response::from_string("{\"error\": \"Invalid request\"}").with_status_code(400),
+            );
             continue;
         }
 
