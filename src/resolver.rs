@@ -4,6 +4,7 @@ use regex::Regex;
 use serde_json::Value;
 use std::collections::HashSet;
 use std::time::Duration;
+use ureq::ResponseExt;
 
 /// Normalizes title string by stripping punctuation and redundant whitespace
 pub fn normalize_title(title: &str) -> String {
@@ -114,16 +115,17 @@ pub fn authors_match(author_a: &str, author_b: &str) -> bool {
 /// Inspects a podcast RSS feed URL over HTTP:
 /// Follows HTTP 301/308 redirects and parses <itunes:new-feed-url> to detect relocated feeds.
 pub fn verify_feed_status(feed_url: &str) -> (String, bool, Option<String>) {
-    let agent = ureq::AgentBuilder::new()
-        .timeout(Duration::from_secs(8))
-        .redirects(5)
-        .build();
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .timeout_global(Some(Duration::from_secs(8)))
+        .max_redirects(5)
+        .build()
+        .into();
 
     match agent.get(feed_url).call() {
         Ok(resp) => {
-            let final_url = resp.get_url().to_string();
+            let final_url = resp.get_uri().to_string();
             // Read first 8KB of body to check for itunes:new-feed-url
-            let mut reader = resp.into_reader();
+            let mut reader = resp.into_body().into_reader();
             let mut buf = [0u8; 8192];
             let n = std::io::Read::read(&mut reader, &mut buf).unwrap_or(0);
             let snippet = String::from_utf8_lossy(&buf[..n]);
@@ -156,21 +158,22 @@ pub fn search_apple_podcasts(
         encoded_term
     );
 
-    let agent = ureq::AgentBuilder::new()
-        .timeout(Duration::from_secs(10))
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .timeout_global(Some(Duration::from_secs(10)))
         .user_agent("iTunes/12.11.3 (Windows; Microsoft Windows 10 x64)")
-        .build();
+        .build()
+        .into();
 
     let mut response_val: Option<Value> = None;
     for attempt in 0..3 {
         match agent.get(&url).call() {
             Ok(resp) => {
-                if let Ok(val) = resp.into_json::<Value>() {
+                if let Ok(val) = resp.into_body().read_json::<Value>() {
                     response_val = Some(val);
                     break;
                 }
             }
-            Err(ureq::Error::Status(code, _)) if code == 429 || code == 403 || code == 503 => {
+            Err(ureq::Error::StatusCode(code)) if code == 429 || code == 403 || code == 503 => {
                 std::thread::sleep(Duration::from_millis(500 * (attempt + 1)));
             }
             Err(_) => {

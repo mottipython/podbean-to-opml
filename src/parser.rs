@@ -3,6 +3,7 @@ use regex::Regex;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::LazyLock;
+use ureq::ResponseExt;
 
 static RE_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]+>").unwrap());
 static RE_CARD: LazyLock<Regex> = LazyLock::new(|| {
@@ -467,18 +468,19 @@ pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
         return Err("URL must start with http:// or https://".to_string());
     }
 
-    let agent = ureq::AgentBuilder::new()
-        .timeout(std::time::Duration::from_secs(6))
-        .redirects(5)
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .timeout_global(Some(std::time::Duration::from_secs(6)))
+        .max_redirects(5)
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-        .build();
+        .build()
+        .into();
 
     let resp = agent
         .get(clean_url)
         .call()
         .map_err(|e| format!("Failed to fetch URL '{}': {}", clean_url, e))?;
 
-    let final_url = resp.get_url().to_string();
+    let final_url = resp.get_uri().to_string();
     if final_url.contains("/login")
         || final_url.contains("/signin")
         || final_url.contains("user/login")
@@ -487,7 +489,8 @@ pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
     }
 
     let body = resp
-        .into_string()
+        .into_body()
+        .read_to_string()
         .map_err(|e| format!("Failed to read response body: {}", e))?;
 
     let mut shows = parse_content(&body, None);
@@ -518,7 +521,7 @@ pub fn scrape_url(url: &str) -> Result<Vec<PodcastShow>, String> {
             let separator = if clean_url.contains('?') { '&' } else { '?' };
             let page_url = format!("{}{}page={}", clean_url, separator, p);
             if let Ok(page_resp) = agent.get(&page_url).call() {
-                if let Ok(page_body) = page_resp.into_string() {
+                if let Ok(page_body) = page_resp.into_body().read_to_string() {
                     let page_shows = parse_content(&page_body, Some("Podbean"));
                     let page_count = page_shows.len();
                     let mut new_in_page = 0;
